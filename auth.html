@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --bg-card: #242424; --border: #333;
+  --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888; --text-dim: #4a4a4a;
+  --red: #e05252;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; }
+
+nav { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: #0f0f0f; border-bottom: 2px solid #252525; }
+.nav-logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; text-decoration: none; display: block; }
+.nav-logo span { color: var(--diamond); }
+
+.container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
+
+.card { background: var(--bg-card); border: 2px solid var(--border); padding: 2rem; width: 100%; max-width: 420px; }
+
+.card-title { font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.4rem; text-align: center; }
+.card-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem; letter-spacing: 1px; }
+
+.tabs { display: flex; gap: 2px; margin-bottom: 1.5rem; }
+.tab { flex: 1; padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 8px; text-align: center; cursor: pointer; border: 2px solid var(--border); background: var(--bg); color: var(--text-muted); transition: all 0.15s; letter-spacing: 0.5px; }
+.tab.active { background: var(--grass); color: #fff; border-color: var(--grass); text-shadow: 1px 1px 0 #000; }
+.tab:hover:not(.active) { border-color: var(--grass); color: var(--grass-light); }
+
+.form-group { margin-bottom: 1rem; }
+.form-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-muted); display: block; margin-bottom: 0.4rem; letter-spacing: 0.5px; }
+.form-input { width: 100%; padding: 10px 12px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text); font-family: 'VT323', monospace; font-size: 18px; outline: none; transition: border-color 0.15s; letter-spacing: 1px; }
+.form-input:focus { border-color: var(--grass); }
+.form-input::placeholder { color: var(--text-dim); }
+
+.btn-submit { width: 100%; padding: 13px 0 15px; font-family: 'Press Start 2P', monospace; font-size: 10px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; transition: transform 0.1s, box-shadow 0.1s; letter-spacing: 0.5px; margin-top: 0.5rem; }
+.btn-submit:hover { background: var(--grass-light); transform: translateY(-2px); box-shadow: 0 6px 0 #2a4a1a; }
+.btn-submit:active { transform: translateY(2px); box-shadow: 0 2px 0 #2a4a1a; }
+.btn-submit:disabled { background: var(--text-dim); box-shadow: none; cursor: not-allowed; transform: none; }
+
+.msg { font-family: 'VT323', monospace; font-size: 17px; padding: 8px 12px; margin-bottom: 1rem; letter-spacing: 1px; display: none; }
+.msg.success { background: #1a2e1a; border: 1px solid var(--grass); color: var(--grass-light); }
+.msg.error { background: #2e1a1a; border: 1px solid var(--red); color: var(--red); }
+.msg.show { display: block; }
+.pw-wrap { position: relative; }
+.pw-wrap .form-input { padding-right: 44px; width: 100%; }
+.pw-toggle { position: absolute; right: 0; top: 0; bottom: 0; width: 40px; background: #222; border: none; border-left: 2px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.pw-toggle:hover { background: #2a2a2a; color: var(--text); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+.pixel-divider { width: 100%; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); }
+
+/* DASHBOARD */
+.dashboard { display: none; flex: 1; flex-direction: column; }
+.dashboard.show { display: flex; }
+.dash-header { background: #0f0f0f; border-bottom: 2px solid #252525; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.dash-welcome { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--grass-light); text-shadow: 1px 1px 0 #2a4a1a; }
+.dash-welcome span { color: var(--diamond); }
+.btn-signout { padding: 6px 14px 8px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+.btn-signout:hover { border-color: var(--red); color: var(--red); }
+
+.dash-body { flex: 1; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+.dash-title { font-family: 'Press Start 2P', monospace; font-size: 12px; color: var(--text); text-shadow: 1px 1px 0 #000; margin-bottom: 0.3rem; }
+.dash-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 1px; }
+
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2px; margin-bottom: 1.5rem; }
+.dash-card { background: var(--bg-card); border: 2px solid var(--border); border-top: 3px solid var(--grass); padding: 1.25rem; }
+.dash-card-icon { font-size: 28px; margin-bottom: 0.5rem; display: block; }
+.dash-card-title { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.4rem; line-height: 1.6; }
+.dash-card-desc { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-muted); line-height: 1.35; margin-bottom: 0.75rem; }
+.dash-card-btn { display: inline-block; padding: 7px 14px 9px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-shadow: 1px 1px 0 #000; box-shadow: 0 3px 0 #2a4a1a; transition: transform 0.1s; letter-spacing: 0.5px; text-decoration: none; }
+.dash-card-btn:hover { background: var(--grass-light); transform: translateY(-1px); }
+.dash-card-btn.disabled { background: var(--text-dim); box-shadow: none; cursor: not-allowed; }
+
+.coming-soon-tag { display: inline-block; background: #1a2a1a; border: 1px solid var(--grass); color: var(--grass-light); font-family: 'VT323', monospace; font-size: 14px; padding: 2px 8px; letter-spacing: 1px; }
+
+.dash-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 2px; }
+.dash-stat { background: var(--bg-card); border: 2px solid var(--border); padding: 1rem; text-align: center; }
+.dash-stat-num { font-family: 'Press Start 2P', monospace; font-size: 18px; color: var(--gold); display: block; text-shadow: 1px 1px 0 #8B6914; }
+.dash-stat-label { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-dim); letter-spacing: 1px; }
+
+footer { background: #0d0d0d; border-top: 2px solid #1f1f1f; padding: 1rem 1.5rem; text-align: center; color: var(--text-dim); }
+.footer-logo { font-family: 'Press Start 2P', monospace; font-size: 10px; margin-bottom: 0.3rem; }
+.footer-logo .addon { color: var(--grass-light); }
+.footer-logo .studio { color: var(--diamond); }
+footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SECTION -->
+<div id="auth-section">
+  <nav>
+    <a href="index.html" class="nav-logo">Minevixel<span> Studio</span></a>
+  </nav>
+  <div class="pixel-divider"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Welcome</div>
+      <div class="card-sub">Sign in or create your account</div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">Login</div>
+        <div class="tab" onclick="switchTab('signup')">Sign Up</div>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <!-- LOGIN FORM -->
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" />
+            <button type="button" class="pw-toggle" onclick="togglePw('login-password', this)" tabindex="-1">👁</button>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="handleLogin()">Login</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signup-form" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="signup-username" class="form-input" placeholder="CoolCreator123" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="signup-password" class="form-input" placeholder="Min 6 characters" />
+            <button type="button" class="pw-toggle" onclick="togglePw('signup-password', this)" tabindex="-1">👁</button>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="handleSignup()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD SECTION -->
+<div id="dashboard-section" class="dashboard">
+  <div class="pixel-divider"></div>
+  <div class="dash-header">
+    <div class="dash-welcome">Welcome back, <span id="dash-username">Creator</span>!</div>
+    <button class="btn-signout" onclick="handleSignout()">Sign Out</button>
+  </div>
+  <div class="pixel-divider"></div>
+
+  <div class="dash-body">
+    <div class="dash-title">Your Dashboard</div>
+    <div class="dash-sub">Everything you need to create amazing Minecraft addons</div>
+
+    <div class="dash-grid">
+      <div class="dash-card">
+        <span class="dash-card-icon">📸</span>
+        <div class="dash-card-title">Create Addon</div>
+        <div class="dash-card-desc">Upload a photo or describe your idea and let AI generate your addon.</div>
+        <a href="create.html" class="dash-card-btn">Create Now →</a>
+      </div>
+      <div class="dash-card">
+        <span class="dash-card-icon">📦</span>
+        <div class="dash-card-title">My Addons</div>
+        <div class="dash-card-desc">View, edit and manage all the addons you have created.</div>
+        <span class="dash-card-btn disabled">Coming in Phase 5</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-card-icon">🌍</span>
+        <div class="dash-card-title">Community Gallery</div>
+        <div class="dash-card-desc">Discover and download addons created by the community.</div>
+        <span class="dash-card-btn disabled">Coming in Phase 7</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-card-icon">💰</span>
+        <div class="dash-card-title">Marketplace</div>
+        <div class="dash-card-desc">Sell your addons and earn revenue from your creativity.</div>
+        <span class="dash-card-btn disabled">Coming in Phase 8</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-card-icon">👤</span>
+        <div class="dash-card-title">My Profile</div>
+        <div class="dash-card-desc">Customise your creator profile and manage your account settings.</div>
+        <span class="dash-card-btn disabled">Coming in Phase 7</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-card-icon">📊</span>
+        <div class="dash-card-title">Analytics</div>
+        <div class="dash-card-desc">Track downloads, views and ratings on your shared addons.</div>
+        <span class="dash-card-btn disabled">Coming in Phase 9</span>
+      </div>
+    </div>
+
+    <div class="dash-stats">
+      <div class="dash-stat"><span class="dash-stat-num">0</span><div class="dash-stat-label">Addons Created</div></div>
+      <div class="dash-stat"><span class="dash-stat-num">0</span><div class="dash-stat-label">Downloads</div></div>
+      <div class="dash-stat"><span class="dash-stat-num">0</span><div class="dash-stat-label">Community Likes</div></div>
+      <div class="dash-stat"><span class="dash-stat-num">FREE</span><div class="dash-stat-label">Current Plan</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><span class="addon">MINEVIXEL</span> <span class="studio">STUDIO</span></div>
+    <p>© 2026 Minevixel Studio. All rights reserved.</p>
+  </footer>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://msinakayesbwqxrkzvzb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type + ' show';
+}
+
+function hideMsg() {
+  const el = document.getElementById('msg');
+  el.className = 'msg';
+}
+
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+function switchTab(tab) {
+  hideMsg();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.querySelectorAll('.tab')[tab === 'login' ? 0 : 1].classList.add('active');
+}
+
+function showDashboard(user) {
+  document.getElementById('auth-section').style.display = 'none';
+  document.getElementById('dashboard-section').classList.add('show');
+  const username = user.user_metadata?.username || user.email.split('@')[0];
+  document.getElementById('dash-username').textContent = username;
+}
+
+function showAuth() {
+  document.getElementById('auth-section').style.display = 'block';
+  document.getElementById('dashboard-section').classList.remove('show');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { showMsg('Please fill in all fields', 'error'); return; }
+  const btn = document.querySelector('#login-form .btn-submit');
+  btn.disabled = true; btn.textContent = 'Logging in...';
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Login';
+  if (error) { showMsg(error.message, 'error'); return; }
+  showDashboard(data.user);
+}
+
+async function handleSignup() {
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if (!username || !email || !password) { showMsg('Please fill in all fields', 'error'); return; }
+  if (password.length < 6) { showMsg('Password must be at least 6 characters', 'error'); return; }
+  const btn = document.querySelector('#signup-form .btn-submit');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { username } } });
+  btn.disabled = false; btn.textContent = 'Create Account';
+  if (error) { showMsg(error.message, 'error'); return; }
+  showMsg('Account created! Please check your email to confirm your account.', 'success');
+}
+
+async function handleSignout() {
+  await supabaseClient.auth.signOut();
+  showAuth();
+}
+
+// Check if user is already logged in
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session) showDashboard(session.user);
+});
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session) showDashboard(session.user);
+  else showAuth();
+});
+</script>
+</body>
+</html>
