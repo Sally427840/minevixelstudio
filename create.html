@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Create Addon</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --bg-card: #242424; --border: #333;
+  --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888; --text-dim: #4a4a4a;
+  --red: #e05252;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; }
+nav { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: #0f0f0f; border-bottom: 2px solid #252525; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; text-decoration: none; }
+.nav-logo span { color: var(--diamond); }
+.nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.nav-user { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); }
+.nav-user span { color: var(--diamond); }
+.nav-btn { padding: 5px 10px 6px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.15s; }
+.nav-btn:hover { border-color: var(--grass); color: var(--grass-light); }
+.nav-btn.red:hover { border-color: var(--red); color: var(--red); }
+.pixel-divider { width: 100%; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); }
+main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; }
+.page-title { font-family: 'Press Start 2P', monospace; font-size: clamp(11px, 1.8vw, 15px); color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.3rem; }
+.page-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); margin-bottom: 1.25rem; letter-spacing: 1px; }
+
+/* STEPS */
+.steps-wrap { display: flex; align-items: center; margin-bottom: 0.5rem; }
+.sdot { width: 26px; height: 26px; border: 2px solid var(--border); background: #111; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text-muted); flex-shrink: 0; transition: all 0.2s; }
+.sdot.active { border-color: var(--grass); background: var(--grass); color: #fff; }
+.sdot.done { border-color: var(--grass); color: var(--grass-light); }
+.sline { flex: 1; height: 2px; background: var(--border); transition: background 0.2s; }
+.sline.done { background: var(--grass); }
+.slabels { display: flex; justify-content: space-between; margin-bottom: 1.25rem; }
+.slabel { font-family: 'VT323', monospace; font-size: 14px; color: var(--text-dim); letter-spacing: 1px; }
+
+/* CARD */
+.card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.1rem; margin-bottom: 0.85rem; }
+.card-title { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.75rem; line-height: 1.7; }
+
+/* TYPE SELECT */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.type-opt { background: #1a1a1a; border: 2px solid var(--border); padding: 1rem; cursor: pointer; text-align: center; transition: all 0.15s; position: relative; }
+.type-opt:hover { border-color: var(--grass-light); }
+.type-opt.sel { border-color: var(--grass); background: #1a2a1a; }
+.type-opt.sel::after { content: '✔'; position: absolute; top: 6px; right: 8px; color: var(--grass-light); font-size: 13px; }
+.type-icon { font-size: 28px; display: block; margin-bottom: 0.4rem; }
+.type-name { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.3rem; line-height: 1.6; }
+.type-desc { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-muted); line-height: 1.3; }
+
+/* UPLOAD */
+.upload-box { border: 2px dashed var(--border); background: #1a1a1a; padding: 1.25rem; text-align: center; cursor: pointer; position: relative; transition: border-color 0.15s; }
+.upload-box:hover { border-color: var(--grass-light); }
+.upload-box.has-img { border-style: solid; border-color: var(--grass); }
+.upload-file { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 28px; display: block; margin-bottom: 0.4rem; }
+.upload-text { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-muted); margin-bottom: 0.25rem; line-height: 1.6; }
+.upload-hint { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-dim); }
+.preview { max-width: 100%; max-height: 180px; display: block; margin: 0 auto 0.5rem; border: 2px solid var(--grass); }
+.remove-btn { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--red); background: none; border: 1px solid var(--red); padding: 4px 8px; cursor: pointer; display: block; margin: 0.4rem auto 0; position: relative; z-index: 2; }
+
+/* FORM */
+.form-group { margin-bottom: 0.8rem; }
+.flabel { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-muted); display: block; margin-bottom: 0.3rem; }
+.flabel small { color: var(--text-dim); font-size: 6px; }
+.finput { width: 100%; padding: 9px 10px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text); font-family: 'VT323', monospace; font-size: 18px; outline: none; transition: border-color 0.15s; }
+.finput:focus { border-color: var(--grass); }
+.finput::placeholder { color: var(--text-dim); }
+.ftextarea { width: 100%; padding: 9px 10px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text); font-family: 'VT323', monospace; font-size: 18px; outline: none; transition: border-color 0.15s; resize: vertical; min-height: 85px; line-height: 1.4; }
+.ftextarea:focus { border-color: var(--grass); }
+.ftextarea::placeholder { color: var(--text-dim); }
+.char-count { font-family: 'VT323', monospace; font-size: 13px; color: var(--text-dim); text-align: right; margin-top: 0.15rem; }
+
+/* BEHAVIOR */
+.beh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 2px; }
+.beh-btn { padding: 7px 6px 9px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.15s; line-height: 1.6; text-align: center; }
+.beh-btn:hover { border-color: var(--grass-light); color: var(--text); }
+.beh-btn.sel { border-color: var(--grass); background: #1a2a1a; color: var(--grass-light); }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem; }
+.btn { display: inline-block; padding: 11px 22px 13px; font-family: 'Press Start 2P', monospace; font-size: 9px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.1s, box-shadow 0.1s; letter-spacing: 0.5px; line-height: 1; }
+.btn-primary { background: var(--grass); color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; }
+.btn-primary:hover { background: var(--grass-light); transform: translateY(-2px); box-shadow: 0 6px 0 #2a4a1a; }
+.btn-back { background: transparent; color: var(--text-muted); border: 2px solid var(--border); }
+.btn-back:hover { border-color: var(--text-muted); color: var(--text); }
+
+/* ERROR */
+.err { font-family: 'VT323', monospace; font-size: 16px; padding: 7px 10px; background: #2e1a1a; border: 1px solid var(--red); color: var(--red); margin-bottom: 0.75rem; display: none; }
+
+/* LOADING */
+.loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+.loading.show { display: flex; }
+.loading-logo { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 3vw, 26px); margin-bottom: 1.5rem; animation: glow 3s ease-in-out infinite; }
+.loading-logo .a { color: var(--grass-light); text-shadow: 3px 3px 0 #2a4a1a; }
+.loading-logo .s { color: var(--diamond); text-shadow: 3px 3px 0 #1a6060; }
+@keyframes glow {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(115,168,50,0.5)) drop-shadow(0 0 14px rgba(74,237,217,0.3)); }
+  50% { filter: drop-shadow(0 0 16px rgba(115,168,50,0.9)) drop-shadow(0 0 36px rgba(74,237,217,0.6)); }
+}
+.blocks { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+.block { width: 14px; height: 14px; animation: bounce 1s ease-in-out infinite; }
+.block:nth-child(1) { background: var(--grass); }
+.block:nth-child(2) { background: var(--grass-light); animation-delay: 0.15s; }
+.block:nth-child(3) { background: var(--diamond); animation-delay: 0.3s; }
+.block:nth-child(4) { background: var(--gold); animation-delay: 0.45s; }
+@keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+.load-status { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--grass-light); margin-bottom: 0.75rem; letter-spacing: 0.5px; min-height: 18px; }
+.load-bar-wrap { width: 280px; max-width: 90%; height: 10px; background: #222; border: 2px solid #333; overflow: hidden; margin-bottom: 0.5rem; }
+.load-bar { height: 100%; background: var(--grass); width: 0%; transition: width 0.5s ease; }
+.load-hint { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-muted); }
+
+/* SUMMARY */
+.sum-row { display: flex; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.sum-row:last-child { border-bottom: none; }
+.sum-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-muted); min-width: 75px; padding-top: 2px; line-height: 1.6; }
+.sum-val { font-family: 'VT323', monospace; font-size: 17px; color: var(--text); line-height: 1.4; }
+.sum-img { width: 56px; height: 56px; object-fit: cover; border: 2px solid var(--grass); flex-shrink: 0; }
+
+/* SUCCESS */
+.success-card { text-align: center; padding: 2rem 1rem; }
+.success-icon { font-size: 48px; display: block; margin-bottom: 1rem; }
+.success-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.75rem; line-height: 1.6; }
+.success-text { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); line-height: 1.5; max-width: 460px; margin: 0 auto 1.25rem; }
+
+footer { background: #0d0d0d; border-top: 2px solid #1f1f1f; padding: 1rem 1.5rem; text-align: center; color: var(--text-dim); }
+.footer-logo { font-family: 'Press Start 2P', monospace; font-size: 10px; margin-bottom: 0.3rem; }
+.fl-a { color: var(--grass-light); }
+.fl-s { color: var(--diamond); }
+footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Minevixel<span> Studio</span></a>
+  <div class="nav-right">
+    <span class="nav-user">Hey, <span id="nav-user">Creator</span></span>
+    <a href="auth.html" class="nav-btn">Dashboard</a>
+    <button class="nav-btn red" id="signout-btn">Sign Out</button>
+  </div>
+</nav>
+<div class="pixel-divider"></div>
+
+<main>
+  <div class="page-title">Create Addon</div>
+  <div class="page-sub">Turn your photo or idea into a Minecraft Bedrock addon</div>
+
+  <div class="steps-wrap">
+    <div class="sdot active" id="d1">1</div>
+    <div class="sline" id="l1"></div>
+    <div class="sdot" id="d2">2</div>
+    <div class="sline" id="l2"></div>
+    <div class="sdot" id="d3">3</div>
+  </div>
+  <div class="slabels">
+    <div class="slabel">Choose Type</div>
+    <div class="slabel">Add Details</div>
+    <div class="slabel">Review</div>
+  </div>
+
+  <div class="err" id="err"></div>
+
+  <!-- STEP 1 -->
+  <div id="s1">
+    <div class="card">
+      <div class="card-title">What would you like to create?</div>
+      <div class="type-grid">
+        <div class="type-opt" id="opt-mob" onclick="pickType('mob')">
+          <span class="type-icon">🦎</span>
+          <div class="type-name">Custom Mob</div>
+          <div class="type-desc">A custom creature with unique behaviors and animations</div>
+        </div>
+        <div class="type-opt" id="opt-block" onclick="pickType('block')">
+          <span class="type-icon">🧱</span>
+          <div class="type-name">Custom Block</div>
+          <div class="type-desc">An interactive block with custom textures and behaviors</div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="toStep(2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="s2" style="display:none;">
+    <div class="card">
+      <div class="card-title">Upload a Photo <small style="font-family:VT323,monospace;font-size:14px;color:var(--text-dim);">(optional)</small></div>
+      <div class="upload-box" id="upload-box">
+        <input type="file" class="upload-file" id="file-input" accept="image/*">
+        <div id="upload-ph">
+          <span class="upload-icon">📸</span>
+          <div class="upload-text">Click or drag a photo here</div>
+          <div class="upload-hint">JPG, PNG or WEBP — max 5MB</div>
+        </div>
+        <img id="preview" class="preview" style="display:none;">
+        <button class="remove-btn" id="remove-btn" style="display:none;">✕ Remove Photo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Describe Your Addon</div>
+      <div class="form-group">
+        <label class="flabel">Addon Name <small>(required)</small></label>
+        <input type="text" id="aname" class="finput" placeholder="e.g. Fire Dragon, Crystal Block..." maxlength="40">
+      </div>
+      <div class="form-group">
+        <label class="flabel">Description <small>(required)</small></label>
+        <textarea id="adesc" class="ftextarea" placeholder="Describe what it looks like and how it behaves. More detail = better results!" maxlength="500"></textarea>
+        <div class="char-count"><span id="cc">0</span>/500</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="beh-title">Mob Behavior</div>
+      <div class="beh-grid" id="beh-grid"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="toStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="toStep(3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="s3" style="display:none;">
+    <div class="card">
+      <div class="card-title">Review Your Addon</div>
+      <div id="summary"></div>
+    </div>
+    <div class="card" style="background:#1a2a1a;border-color:var(--grass);">
+      <div class="card-title" style="color:var(--grass-light);">⚡ Coming in Phase 4</div>
+      <div style="font-family:VT323,monospace;font-size:17px;color:var(--text-muted);line-height:1.5;">The AI engine is being built in Phase 4. Clicking Generate below will show you a preview of how the generation process will work!</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="toStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="simulate()">⚡ Generate Addon</button>
+    </div>
+  </div>
+</main>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="loading-logo"><span class="a">MINEVIXEL</span> <span class="s">STUDIO</span></div>
+  <div class="blocks">
+    <div class="block"></div>
+    <div class="block"></div>
+    <div class="block"></div>
+    <div class="block"></div>
+  </div>
+  <div class="load-status" id="load-status">Initialising AI...</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+  <div class="load-hint">Please wait while we craft your addon</div>
+</div>
+
+<div class="pixel-divider"></div>
+<footer>
+  <div class="footer-logo"><span class="fl-a">MINEVIXEL</span> <span class="fl-s">STUDIO</span></div>
+  <p>© 2026 Minevixel Studio. All rights reserved.</p>
+</footer>
+
+<script>
+const SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
+const sc = window.supabase.createClient(SURL, SKEY);
+
+let addonType = null, behavior = null, photoUrl = null;
+
+// Auth
+sc.auth.getSession().then(({data:{session}}) => {
+  if (!session) { window.location.href = 'auth.html'; return; }
+  const u = session.user.user_metadata?.username || session.user.email.split('@')[0];
+  document.getElementById('nav-user').textContent = u;
+});
+
+document.getElementById('signout-btn').onclick = async () => {
+  await sc.auth.signOut();
+  window.location.href = 'auth.html';
+};
+
+// Type
+function pickType(t) {
+  addonType = t;
+  document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('sel'));
+  document.getElementById('opt-' + t).classList.add('sel');
+}
+
+// Photo
+document.getElementById('file-input').onchange = function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.size > 5*1024*1024) { showErr('Photo must be under 5MB'); return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    photoUrl = ev.target.result;
+    document.getElementById('preview').src = photoUrl;
+    document.getElementById('preview').style.display = 'block';
+    document.getElementById('upload-ph').style.display = 'none';
+    document.getElementById('remove-btn').style.display = 'block';
+    document.getElementById('upload-box').classList.add('has-img');
+  };
+  r.readAsDataURL(f);
+};
+
+document.getElementById('remove-btn').onclick = function(e) {
+  e.stopPropagation(); e.preventDefault();
+  photoUrl = null;
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('upload-ph').style.display = 'block';
+  document.getElementById('remove-btn').style.display = 'none';
+  document.getElementById('upload-box').classList.remove('has-img');
+  document.getElementById('file-input').value = '';
+};
+
+// Char count
+document.getElementById('adesc').oninput = function() {
+  document.getElementById('cc').textContent = this.value.length;
+};
+
+// Behaviors
+const mobBehs = ['Passive','Neutral','Hostile','Boss','Companion','Trader'];
+const blockBehs = ['Decorative','Interactive','Animated','Light Emitting','Explosive','Portal'];
+
+function buildBehs(type) {
+  const list = type === 'mob' ? mobBehs : blockBehs;
+  document.getElementById('beh-title').textContent = type === 'mob' ? 'Mob Behavior' : 'Block Type';
+  document.getElementById('beh-grid').innerHTML = list.map(b =>
+    `<button class="beh-btn" onclick="pickBeh('${b}',this)">${b}</button>`
+  ).join('');
+  behavior = null;
+}
+
+function pickBeh(b, el) {
+  behavior = b;
+  document.querySelectorAll('.beh-btn').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// Error
+function showErr(msg) {
+  const el = document.getElementById('err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3500);
+}
+
+// Steps
+function updateDots(step) {
+  for (let i=1;i<=3;i++) {
+    const d = document.getElementById('d'+i);
+    d.classList.remove('active','done');
+    if (i < step) d.classList.add('done');
+    else if (i === step) d.classList.add('active');
+  }
+  for (let i=1;i<=2;i++) {
+    document.getElementById('l'+i).classList.toggle('done', i < step);
+  }
+}
+
+function toStep(n) {
+  if (n === 2) {
+    if (!addonType) { showErr('Please select an addon type first'); return; }
+    buildBehs(addonType);
+  }
+  if (n === 3) {
+    const name = document.getElementById('aname').value.trim();
+    const desc = document.getElementById('adesc').value.trim();
+    if (!name) { showErr('Please enter a name for your addon'); return; }
+    if (desc.length < 10) { showErr('Please write a longer description'); return; }
+    buildSummary(name, desc);
+  }
+  document.getElementById('err').style.display = 'none';
+  for (let i=1;i<=3;i++) document.getElementById('s'+i).style.display = i===n ? 'block' : 'none';
+  updateDots(n);
+  window.scrollTo(0,0);
+}
+
+function buildSummary(name, desc) {
+  let h = '';
+  if (photoUrl) h += `<div class="sum-row"><div class="sum-label">Photo</div><img src="${photoUrl}" class="sum-img"></div>`;
+  h += `<div class="sum-row"><div class="sum-label">Type</div><div class="sum-val">${addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'}</div></div>`;
+  h += `<div class="sum-row"><div class="sum-label">Name</div><div class="sum-val">${name}</div></div>`;
+  h += `<div class="sum-row"><div class="sum-label">Description</div><div class="sum-val">${desc}</div></div>`;
+  if (behavior) h += `<div class="sum-row"><div class="sum-label">Behavior</div><div class="sum-val">${behavior}</div></div>`;
+  document.getElementById('summary').innerHTML = h;
+}
+
+// Simulate generation
+const loadSteps = [
+  {t:'Initialising AI...', p:10},
+  {t:'Analysing your input...', p:25},
+  {t:'Generating 3D model...', p:45},
+  {t:'Creating textures...', p:62},
+  {t:'Building behaviors...', p:78},
+  {t:'Packaging addon files...', p:92},
+  {t:'Almost ready...', p:99},
+];
+
+function simulate() {
+  document.getElementById('loading').classList.add('show');
+  let i = 0;
+  function next() {
+    if (i >= loadSteps.length) {
+      setTimeout(() => {
+        document.getElementById('loading').classList.remove('show');
+        document.getElementById('load-bar').style.width = '0%';
+        showSuccess();
+      }, 700);
+      return;
+    }
+    document.getElementById('load-status').textContent = loadSteps[i].t;
+    document.getElementById('load-bar').style.width = loadSteps[i].p + '%';
+    i++;
+    setTimeout(next, 850);
+  }
+  next();
+}
+
+function showSuccess() {
+  document.getElementById('s3').innerHTML = `
+    <div class="card success-card">
+      <span class="success-icon">🎉</span>
+      <div class="success-title">Addon Queued Successfully!</div>
+      <div class="success-text">Your addon details have been saved. The full AI generation engine is coming in Phase 4 — your addon will be one of the first to be created when it launches!</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grass);margin-bottom:1.5rem;">Details saved ✔</div>
+      <a href="create.html" class="btn btn-primary">Create Another</a>
+    </div>
+  `;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
