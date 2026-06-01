@@ -403,33 +403,76 @@ const loadSteps = [
   {t:'Almost ready...', p:99},
 ];
 
-function simulate() {
+async function simulate() {
+  const name = document.getElementById('aname').value.trim();
+  const desc = document.getElementById('adesc').value.trim();
+
   document.getElementById('loading').classList.add('show');
+
+  // Start loading animation
   let i = 0;
-  function next() {
-    if (i >= loadSteps.length) {
-      setTimeout(() => {
-        document.getElementById('loading').classList.remove('show');
-        document.getElementById('load-bar').style.width = '0%';
-        showSuccess();
-      }, 700);
+  function nextStep() {
+    if (i < loadSteps.length) {
+      document.getElementById('load-status').textContent = loadSteps[i].t;
+      document.getElementById('load-bar').style.width = loadSteps[i].p + '%';
+      i++;
+      setTimeout(nextStep, 850);
+    }
+  }
+  nextStep();
+
+  try {
+    const body = {
+      addonType,
+      addonName: name,
+      description: desc,
+      behavior: behavior || 'Default',
+      photo: photoUrl || null
+    };
+
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('load-bar').style.width = '0%';
+
+    if (!response.ok || !data.success) {
+      showErr(data.error || 'Generation failed. Please try again.');
       return;
     }
-    document.getElementById('load-status').textContent = loadSteps[i].t;
-    document.getElementById('load-bar').style.width = loadSteps[i].p + '%';
-    i++;
-    setTimeout(next, 850);
+
+    showSuccess(data.addon);
+
+  } catch (err) {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('load-bar').style.width = '0%';
+    showErr('Something went wrong. Please try again.');
   }
-  next();
 }
 
-function showSuccess() {
+function showSuccess(addon) {
+  const colors = addon.colors || [];
+  const swatches = colors.map(c => `<div style="width:28px;height:28px;background:${c};border:2px solid #333;display:inline-block;margin:2px;"></div>`).join('');
+
   document.getElementById('s3').innerHTML = `
     <div class="card success-card">
       <span class="success-icon">🎉</span>
-      <div class="success-title">Addon Queued Successfully!</div>
-      <div class="success-text">Your addon details have been saved. The full AI generation engine is coming in Phase 4 — your addon will be one of the first to be created when it launches!</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grass);margin-bottom:1.5rem;">Details saved ✔</div>
+      <div class="success-title">Addon Generated!</div>
+      <div class="success-text">Your AI generated Minecraft Bedrock addon is ready. Full .mcaddon file packaging and download is coming in Phase 5!</div>
+      <div style="margin:1rem 0;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">GENERATED COLOR PALETTE</div>
+        <div>${swatches}</div>
+      </div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">ADDON NAME</div>
+      <div style="font-family:'VT323',monospace;font-size:20px;color:var(--grass-light);margin-bottom:1rem;">${addon.addonName}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">TYPE</div>
+      <div style="font-family:'VT323',monospace;font-size:18px;color:var(--text);margin-bottom:1rem;">${addon.addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'} — ${addon.behavior}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grass);margin-bottom:1.5rem;">✔ AI Generation Complete</div>
       <a href="create.html" class="btn btn-primary">Create Another</a>
     </div>
   `;
