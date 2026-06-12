@@ -446,7 +446,7 @@ async function simulate() {
       return;
     }
 
-    showSuccess(data.addon);
+    showSuccess(data.addon, data.files);
 
   } catch (err) {
     document.getElementById('loading').classList.remove('show');
@@ -455,28 +455,114 @@ async function simulate() {
   }
 }
 
-function showSuccess(addon) {
+function showSuccess(addon, files) {
   const colors = addon.colors || [];
-  const swatches = colors.map(c => `<div style="width:28px;height:28px;background:${c};border:2px solid #333;display:inline-block;margin:2px;"></div>`).join('');
+  const swatches = colors.map(c => `<div style="width:28px;height:28px;background:${c};border:2px solid #333;display:inline-block;margin:2px;" title="${c}"></div>`).join('');
 
   document.getElementById('s3').innerHTML = `
     <div class="card success-card">
       <span class="success-icon">🎉</span>
-      <div class="success-title">Addon Generated!</div>
-      <div class="success-text">Your AI generated Minecraft Bedrock addon is ready. Full .mcaddon file packaging and download is coming in Phase 5!</div>
-      <div style="margin:1rem 0;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">GENERATED COLOR PALETTE</div>
-        <div>${swatches}</div>
+      <div class="success-title">Addon Ready!</div>
+      <div class="success-text">Your AI generated Minecraft Bedrock addon is ready to install!</div>
+
+      <div style="background:#111;border:2px solid var(--border);padding:1rem;margin:1rem 0;text-align:left;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">ADDON NAME</div>
+        <div style="font-family:'VT323',monospace;font-size:22px;color:var(--grass-light);margin-bottom:0.75rem;">${addon.addonName}</div>
+
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">TYPE & BEHAVIOR</div>
+        <div style="font-family:'VT323',monospace;font-size:18px;color:var(--text);margin-bottom:0.75rem;">${addon.addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'} — ${addon.behavior}</div>
+
+        ${addon.lore ? `
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">LORE</div>
+        <div style="font-family:'VT323',monospace;font-size:17px;color:var(--text-muted);margin-bottom:0.75rem;font-style:italic;">"${addon.lore}"</div>
+        ` : ''}
+
+        ${addon.addonType === 'mob' ? `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:0.75rem;">
+          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">HEALTH</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#e05252;">❤ ${addon.health || 20}</div>
+          </div>
+          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">ATTACK</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--gold);">⚔ ${addon.attack || 4}</div>
+          </div>
+          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">SIZE</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--diamond);">${addon.size || 'medium'}</div>
+          </div>
+        </div>
+        ` : ''}
+
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">COLOR PALETTE</div>
+        <div style="margin-bottom:0.5rem;">${swatches}</div>
       </div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">ADDON NAME</div>
-      <div style="font-family:'VT323',monospace;font-size:20px;color:var(--grass-light);margin-bottom:1rem;">${addon.addonName}</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">TYPE</div>
-      <div style="font-family:'VT323',monospace;font-size:18px;color:var(--text);margin-bottom:1rem;">${addon.addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'} — ${addon.behavior}</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grass);margin-bottom:1.5rem;">✔ AI Generation Complete</div>
-      <a href="create.html" class="btn btn-primary">Create Another</a>
+
+      <button class="btn btn-primary" onclick="downloadAddon()" style="width:100%;margin-bottom:0.5rem;font-size:10px;padding:14px 0 16px;">
+        ⬇ Install to Minecraft
+      </button>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:0.5rem;">
+        <a href="create.html" class="btn btn-back" style="text-align:center;font-size:7px;padding:9px 0 11px;">Create Another</a>
+        <button class="btn btn-back" style="font-size:7px;padding:9px 0 11px;" onclick="alert('My Addons coming in Phase 7!')">My Addons</button>
+        <button class="btn btn-back" style="font-size:7px;padding:9px 0 11px;" onclick="alert('Community sharing coming in Phase 7!')">Share</button>
+      </div>
+
+      <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-dim);margin-top:1rem;line-height:1.8;">
+        To install: download the file → open it on your device → Minecraft will install it automatically
+      </div>
     </div>
   `;
+
+  // Store files for download
+  window._addonFiles = files;
+  window._addonName = addon.identifier || addon.addonName.toLowerCase().replace(/\s+/g,'_');
   window.scrollTo(0,0);
+}
+
+async function downloadAddon() {
+  if (!window._addonFiles) { showErr('No addon data found. Please generate again.'); return; }
+
+  try {
+    // Load JSZip
+    if (!window.JSZip) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    }
+
+    const zip = new JSZip();
+    const files = window._addonFiles;
+
+    for (const [path, content] of Object.entries(files)) {
+      if (path.endsWith('.png')) {
+        zip.file(path, content, { base64: true });
+      } else {
+        zip.file(path, content);
+      }
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = window._addonName + '.mcaddon';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    showErr('Download failed: ' + err.message);
+  }
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
 }
 </script>
 </body>
