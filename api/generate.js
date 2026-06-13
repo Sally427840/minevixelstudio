@@ -1,4 +1,6 @@
-module.exports = async function handler(req, res) {
+export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,17 +10,10 @@ module.exports = async function handler(req, res) {
 
   try {
     const { addonType, addonName, description, behavior, photo } = req.body;
-
-    if (!addonName || !description) {
-      res.status(400).json({ error: 'Missing required fields' });
-      return;
-    }
+    if (!addonName || !description) { res.status(400).json({ error: 'Missing required fields' }); return; }
 
     const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
-    if (!ANTHROPIC_KEY) {
-      res.status(500).json({ error: 'API key not configured' });
-      return;
-    }
+    if (!ANTHROPIC_KEY) { res.status(500).json({ error: 'API key not configured' }); return; }
 
     const identifier = addonName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
 
@@ -28,8 +23,8 @@ Name: ${addonName}
 Description: ${description}
 Behavior: ${behavior || 'Passive'}
 
-Respond ONLY with valid JSON, no markdown, no extra text:
-{"addonName":"${addonName}","addonType":"${addonType}","identifier":"${identifier}","behavior":"${behavior || 'Passive'}","description":"${description}","colors":["#5D8A3C","#4AEDD9","#FFD700","#8B5E3C","#f0f0f0"],"health":20,"attack":4,"speed":0.3,"size":"medium","abilities":["walks","follows player"],"lore":"A mysterious creature from another dimension"}`;
+Respond ONLY with valid JSON, no markdown:
+{"addonName":"${addonName}","addonType":"${addonType}","identifier":"${identifier}","behavior":"${behavior || 'Passive'}","description":"${description}","colors":["#5D8A3C","#4AEDD9","#FFD700","#8B5E3C","#f0f0f0"],"health":20,"attack":4,"speed":0.3,"size":"medium","lore":"A mysterious creature"}`;
 
     const messages = [];
     if (photo) {
@@ -51,21 +46,14 @@ Respond ONLY with valid JSON, no markdown, no extra text:
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      res.status(500).json({ error: data.error?.message || 'Claude API error' });
-      return;
-    }
+    if (!response.ok) { res.status(500).json({ error: data.error?.message || 'Claude API error' }); return; }
 
     const text = data.content[0].text;
     const clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     let parsed;
-    try {
-      parsed = JSON.parse(clean);
-    } catch (e) {
-      parsed = { addonName, addonType, identifier, behavior: behavior || 'Passive', description, colors: ['#5D8A3C','#4AEDD9','#FFD700','#8B5E3C','#f0f0f0'], health: 20, attack: 4, speed: 0.3, size: 'medium', abilities: ['walks'], lore: description };
-    }
+    try { parsed = JSON.parse(clean); }
+    catch (e) { parsed = { addonName, addonType, identifier, behavior: behavior || 'Passive', description, colors: ['#5D8A3C','#4AEDD9','#FFD700','#8B5E3C','#f0f0f0'], health: 20, attack: 4, speed: 0.3, size: 'medium', lore: description }; }
 
     const uuid1 = genUUID(), uuid2 = genUUID(), uuid3 = genUUID(), uuid4 = genUUID();
     const id = parsed.identifier || identifier;
@@ -93,4 +81,4 @@ function genUUID() {
     const r = Math.random() * 16 | 0;
     return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
-}
+}s
