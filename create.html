@@ -6,6 +6,7 @@
 <title>Minevixel Studio — Create Addon</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -29,8 +30,6 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; }
 .page-title { font-family: 'Press Start 2P', monospace; font-size: clamp(11px, 1.8vw, 15px); color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.3rem; }
 .page-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); margin-bottom: 1.25rem; letter-spacing: 1px; }
-
-/* STEPS */
 .steps-wrap { display: flex; align-items: center; margin-bottom: 0.5rem; }
 .sdot { width: 26px; height: 26px; border: 2px solid var(--border); background: #111; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text-muted); flex-shrink: 0; transition: all 0.2s; }
 .sdot.active { border-color: var(--grass); background: var(--grass); color: #fff; }
@@ -39,12 +38,8 @@ main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; 
 .sline.done { background: var(--grass); }
 .slabels { display: flex; justify-content: space-between; margin-bottom: 1.25rem; }
 .slabel { font-family: 'VT323', monospace; font-size: 14px; color: var(--text-dim); letter-spacing: 1px; }
-
-/* CARD */
 .card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.1rem; margin-bottom: 0.85rem; }
 .card-title { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.75rem; line-height: 1.7; }
-
-/* TYPE SELECT */
 .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 .type-opt { background: #1a1a1a; border: 2px solid var(--border); padding: 1rem; cursor: pointer; text-align: center; transition: all 0.15s; position: relative; }
 .type-opt:hover { border-color: var(--grass-light); }
@@ -53,8 +48,6 @@ main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; 
 .type-icon { font-size: 28px; display: block; margin-bottom: 0.4rem; }
 .type-name { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.3rem; line-height: 1.6; }
 .type-desc { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-muted); line-height: 1.3; }
-
-/* UPLOAD */
 .upload-box { border: 2px dashed var(--border); background: #1a1a1a; padding: 1.25rem; text-align: center; cursor: pointer; position: relative; transition: border-color 0.15s; }
 .upload-box:hover { border-color: var(--grass-light); }
 .upload-box.has-img { border-style: solid; border-color: var(--grass); }
@@ -64,8 +57,6 @@ main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; 
 .upload-hint { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-dim); }
 .preview { max-width: 100%; max-height: 180px; display: block; margin: 0 auto 0.5rem; border: 2px solid var(--grass); }
 .remove-btn { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--red); background: none; border: 1px solid var(--red); padding: 4px 8px; cursor: pointer; display: block; margin: 0.4rem auto 0; position: relative; z-index: 2; }
-
-/* FORM */
 .form-group { margin-bottom: 0.8rem; }
 .flabel { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-muted); display: block; margin-bottom: 0.3rem; }
 .flabel small { color: var(--text-dim); font-size: 6px; }
@@ -76,35 +67,46 @@ main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; 
 .ftextarea:focus { border-color: var(--grass); }
 .ftextarea::placeholder { color: var(--text-dim); }
 .char-count { font-family: 'VT323', monospace; font-size: 13px; color: var(--text-dim); text-align: right; margin-top: 0.15rem; }
-
-/* BEHAVIOR */
 .beh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 2px; }
 .beh-btn { padding: 7px 6px 9px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.15s; line-height: 1.6; text-align: center; }
 .beh-btn:hover { border-color: var(--grass-light); color: var(--text); }
 .beh-btn.sel { border-color: var(--grass); background: #1a2a1a; color: var(--grass-light); }
-
-/* BUTTONS */
 .btn-row { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem; }
 .btn { display: inline-block; padding: 11px 22px 13px; font-family: 'Press Start 2P', monospace; font-size: 9px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.1s, box-shadow 0.1s; letter-spacing: 0.5px; line-height: 1; }
 .btn-primary { background: var(--grass); color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; }
 .btn-primary:hover { background: var(--grass-light); transform: translateY(-2px); box-shadow: 0 6px 0 #2a4a1a; }
 .btn-back { background: transparent; color: var(--text-muted); border: 2px solid var(--border); }
 .btn-back:hover { border-color: var(--text-muted); color: var(--text); }
-
-/* ERROR */
 .err { font-family: 'VT323', monospace; font-size: 16px; padding: 7px 10px; background: #2e1a1a; border: 1px solid var(--red); color: var(--red); margin-bottom: 0.75rem; display: none; }
 
-/* LOADING */
-.loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+/* LOADING SCREEN */
+.loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
 .loading.show { display: flex; }
-.loading-logo { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 3vw, 26px); margin-bottom: 1.5rem; animation: glow 3s ease-in-out infinite; }
+.loading-logo { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 3vw, 26px); margin-bottom: 1rem; animation: glow 3s ease-in-out infinite; }
 .loading-logo .a { color: var(--grass-light); text-shadow: 3px 3px 0 #2a4a1a; }
 .loading-logo .s { color: var(--diamond); text-shadow: 3px 3px 0 #1a6060; }
 @keyframes glow {
   0%,100% { filter: drop-shadow(0 0 6px rgba(115,168,50,0.5)) drop-shadow(0 0 14px rgba(74,237,217,0.3)); }
   50% { filter: drop-shadow(0 0 16px rgba(115,168,50,0.9)) drop-shadow(0 0 36px rgba(74,237,217,0.6)); }
 }
-.blocks { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+
+/* 3D PREVIEW CANVAS */
+#preview-canvas-wrap {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 1rem;
+  position: relative;
+  display: none;
+}
+#preview-canvas {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--border);
+  background: #0a0a0a;
+}
+.canvas-hint { font-family: 'VT323', monospace; font-size: 13px; color: var(--text-dim); margin-top: 0.25rem; letter-spacing: 1px; }
+
+.blocks { display: flex; gap: 6px; margin-bottom: 1rem; }
 .block { width: 14px; height: 14px; animation: bounce 1s ease-in-out infinite; }
 .block:nth-child(1) { background: var(--grass); }
 .block:nth-child(2) { background: var(--grass-light); animation-delay: 0.15s; }
@@ -124,10 +126,31 @@ main { flex: 1; padding: 1.5rem; max-width: 780px; margin: 0 auto; width: 100%; 
 .sum-img { width: 56px; height: 56px; object-fit: cover; border: 2px solid var(--grass); flex-shrink: 0; }
 
 /* SUCCESS */
-.success-card { text-align: center; padding: 2rem 1rem; }
-.success-icon { font-size: 48px; display: block; margin-bottom: 1rem; }
+.success-card { text-align: center; padding: 1rem; }
+.success-icon { font-size: 42px; display: block; margin-bottom: 0.75rem; }
 .success-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.75rem; line-height: 1.6; }
-.success-text { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); line-height: 1.5; max-width: 460px; margin: 0 auto 1.25rem; }
+.success-text { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); line-height: 1.5; max-width: 460px; margin: 0 auto 1rem; }
+
+/* 3D VIEWER IN SUCCESS */
+.viewer-wrap {
+  width: 100%;
+  max-width: 320px;
+  height: 280px;
+  margin: 0 auto 1rem;
+  position: relative;
+  border: 2px solid var(--border);
+  background: #0a0a0a;
+}
+#result-canvas { width: 100%; height: 100%; display: block; }
+.viewer-hint { font-family: 'VT323', monospace; font-size: 13px; color: var(--text-dim); text-align: center; margin-bottom: 0.75rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 0.75rem; }
+.stat-box { background: #1a1a1a; border: 1px solid var(--border); padding: 0.5rem; text-align: center; }
+.stat-label { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--text-muted); display: block; margin-bottom: 0.25rem; }
+.stat-val { font-family: 'Press Start 2P', monospace; font-size: 11px; }
+.stat-val.red { color: #e05252; }
+.stat-val.gold { color: var(--gold); }
+.stat-val.diamond { color: var(--diamond); }
 
 footer { background: #0d0d0d; border-top: 2px solid #1f1f1f; padding: 1rem 1.5rem; text-align: center; color: var(--text-dim); }
 .footer-logo { font-family: 'Press Start 2P', monospace; font-size: 10px; margin-bottom: 0.3rem; }
@@ -204,7 +227,6 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
         <button class="remove-btn" id="remove-btn" style="display:none;">✕ Remove Photo</button>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Describe Your Addon</div>
       <div class="form-group">
@@ -217,12 +239,10 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
         <div class="char-count"><span id="cc">0</span>/500</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title" id="beh-title">Mob Behavior</div>
       <div class="beh-grid" id="beh-grid"></div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-back" onclick="toStep(1)">← Back</button>
       <button class="btn btn-primary" onclick="toStep(3)">Next →</button>
@@ -235,21 +255,21 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
       <div class="card-title">Review Your Addon</div>
       <div id="summary"></div>
     </div>
-    <div class="card" style="background:#1a2a1a;border-color:var(--grass);">
-      <div class="card-title" style="color:var(--grass-light);">⚡ Coming in Phase 4</div>
-      <div style="font-family:VT323,monospace;font-size:17px;color:var(--text-muted);line-height:1.5;">The AI engine is being built in Phase 4. Clicking Generate below will show you a preview of how the generation process will work!</div>
-    </div>
     <div class="btn-row">
       <button class="btn btn-back" onclick="toStep(2)">← Back</button>
-      <button class="btn btn-primary" onclick="simulate()">⚡ Generate Addon</button>
+      <button class="btn btn-primary" onclick="generate()">⚡ Generate Addon</button>
     </div>
   </div>
 </main>
 
-<!-- LOADING -->
+<!-- LOADING SCREEN -->
 <div class="loading" id="loading">
   <div class="loading-logo"><span class="a">MINEVIXEL</span> <span class="s">STUDIO</span></div>
-  <div class="blocks">
+  <div id="preview-canvas-wrap">
+    <canvas id="preview-canvas"></canvas>
+    <div class="canvas-hint">Building your addon...</div>
+  </div>
+  <div class="blocks" id="loading-blocks">
     <div class="block"></div>
     <div class="block"></div>
     <div class="block"></div>
@@ -267,38 +287,40 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
 </footer>
 
 <script>
-const SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
-const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
-const sc = window.supabase.createClient(SURL, SKEY);
+var SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
+var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
+var sc = window.supabase.createClient(SURL, SKEY);
 
-let addonType = null, behavior = null, photoUrl = null;
+var addonType = null, behavior = null, photoUrl = null;
+var resultAddon = null, resultFiles = null;
+var previewScene = null, previewRenderer = null, previewAnimId = null;
+var resultScene = null, resultRenderer = null, resultAnimId = null;
 
 // Auth
-sc.auth.getSession().then(({data:{session}}) => {
+sc.auth.getSession().then(function(res) {
+  var session = res.data.session;
   if (!session) { window.location.href = 'auth.html'; return; }
-  const u = session.user.user_metadata?.username || session.user.email.split('@')[0];
+  var u = session.user.user_metadata && session.user.user_metadata.username ? session.user.user_metadata.username : session.user.email.split('@')[0];
   document.getElementById('nav-user').textContent = u;
 });
 
-document.getElementById('signout-btn').onclick = async () => {
+document.getElementById('signout-btn').onclick = async function() {
   await sc.auth.signOut();
   window.location.href = 'auth.html';
 };
 
-// Type
 function pickType(t) {
   addonType = t;
-  document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('sel'));
+  document.querySelectorAll('.type-opt').forEach(function(o) { o.classList.remove('sel'); });
   document.getElementById('opt-' + t).classList.add('sel');
 }
 
-// Photo
 document.getElementById('file-input').onchange = function(e) {
-  const f = e.target.files[0];
+  var f = e.target.files[0];
   if (!f) return;
   if (f.size > 5*1024*1024) { showErr('Photo must be under 5MB'); return; }
-  const r = new FileReader();
-  r.onload = ev => {
+  var r = new FileReader();
+  r.onload = function(ev) {
     photoUrl = ev.target.result;
     document.getElementById('preview').src = photoUrl;
     document.getElementById('preview').style.display = 'block';
@@ -319,48 +341,50 @@ document.getElementById('remove-btn').onclick = function(e) {
   document.getElementById('file-input').value = '';
 };
 
-// Char count
 document.getElementById('adesc').oninput = function() {
   document.getElementById('cc').textContent = this.value.length;
 };
 
-// Behaviors
-const mobBehs = ['Passive','Neutral','Hostile','Boss','Companion','Trader'];
-const blockBehs = ['Decorative','Interactive','Animated','Light Emitting','Explosive','Portal'];
+var mobBehs = ['Passive','Neutral','Hostile','Boss','Companion','Trader'];
+var blockBehs = ['Decorative','Interactive','Animated','Light Emitting','Explosive','Portal'];
 
 function buildBehs(type) {
-  const list = type === 'mob' ? mobBehs : blockBehs;
+  var list = type === 'mob' ? mobBehs : blockBehs;
   document.getElementById('beh-title').textContent = type === 'mob' ? 'Mob Behavior' : 'Block Type';
-  document.getElementById('beh-grid').innerHTML = list.map(b =>
-    `<button class="beh-btn" onclick="pickBeh('${b}',this)">${b}</button>`
-  ).join('');
+  var grid = document.getElementById('beh-grid');
+  grid.innerHTML = '';
+  list.forEach(function(b) {
+    var btn = document.createElement('button');
+    btn.className = 'beh-btn';
+    btn.textContent = b;
+    btn.onclick = function() { pickBeh(b, btn); };
+    grid.appendChild(btn);
+  });
   behavior = null;
 }
 
 function pickBeh(b, el) {
   behavior = b;
-  document.querySelectorAll('.beh-btn').forEach(x => x.classList.remove('sel'));
+  document.querySelectorAll('.beh-btn').forEach(function(x) { x.classList.remove('sel'); });
   el.classList.add('sel');
 }
 
-// Error
 function showErr(msg) {
-  const el = document.getElementById('err');
+  var el = document.getElementById('err');
   el.textContent = msg;
   el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3500);
+  setTimeout(function() { el.style.display = 'none'; }, 3500);
 }
 
-// Steps
 function updateDots(step) {
-  for (let i=1;i<=3;i++) {
-    const d = document.getElementById('d'+i);
+  for (var i = 1; i <= 3; i++) {
+    var d = document.getElementById('d' + i);
     d.classList.remove('active','done');
     if (i < step) d.classList.add('done');
     else if (i === step) d.classList.add('active');
   }
-  for (let i=1;i<=2;i++) {
-    document.getElementById('l'+i).classList.toggle('done', i < step);
+  for (var j = 1; j <= 2; j++) {
+    document.getElementById('l' + j).classList.toggle('done', j < step);
   }
 }
 
@@ -370,85 +394,252 @@ function toStep(n) {
     buildBehs(addonType);
   }
   if (n === 3) {
-    const name = document.getElementById('aname').value.trim();
-    const desc = document.getElementById('adesc').value.trim();
+    var name = document.getElementById('aname').value.trim();
+    var desc = document.getElementById('adesc').value.trim();
     if (!name) { showErr('Please enter a name for your addon'); return; }
     if (desc.length < 10) { showErr('Please write a longer description'); return; }
     buildSummary(name, desc);
   }
   document.getElementById('err').style.display = 'none';
-  for (let i=1;i<=3;i++) document.getElementById('s'+i).style.display = i===n ? 'block' : 'none';
+  for (var i = 1; i <= 3; i++) {
+    document.getElementById('s' + i).style.display = i === n ? 'block' : 'none';
+  }
   updateDots(n);
   window.scrollTo(0,0);
 }
 
 function buildSummary(name, desc) {
-  let h = '';
-  if (photoUrl) h += `<div class="sum-row"><div class="sum-label">Photo</div><img src="${photoUrl}" class="sum-img"></div>`;
-  h += `<div class="sum-row"><div class="sum-label">Type</div><div class="sum-val">${addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'}</div></div>`;
-  h += `<div class="sum-row"><div class="sum-label">Name</div><div class="sum-val">${name}</div></div>`;
-  h += `<div class="sum-row"><div class="sum-label">Description</div><div class="sum-val">${desc}</div></div>`;
-  if (behavior) h += `<div class="sum-row"><div class="sum-label">Behavior</div><div class="sum-val">${behavior}</div></div>`;
+  var h = '';
+  if (photoUrl) h += '<div class="sum-row"><div class="sum-label">Photo</div><img src="' + photoUrl + '" class="sum-img"></div>';
+  h += '<div class="sum-row"><div class="sum-label">Type</div><div class="sum-val">' + (addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block') + '</div></div>';
+  h += '<div class="sum-row"><div class="sum-label">Name</div><div class="sum-val">' + name + '</div></div>';
+  h += '<div class="sum-row"><div class="sum-label">Description</div><div class="sum-val">' + desc + '</div></div>';
+  if (behavior) h += '<div class="sum-row"><div class="sum-label">Behavior</div><div class="sum-val">' + behavior + '</div></div>';
   document.getElementById('summary').innerHTML = h;
 }
 
-// Simulate generation
-const loadSteps = [
+// ── 3D PREVIEW DURING LOADING ──
+function startLoadingPreview(colors) {
+  var wrap = document.getElementById('preview-canvas-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('loading-blocks').style.display = 'none';
+
+  var canvas = document.getElementById('preview-canvas');
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false });
+  renderer.setSize(220, 220);
+  renderer.setClearColor(0x000000, 0);
+  previewRenderer = renderer;
+
+  var scene = new THREE.Scene();
+  previewScene = scene;
+
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(3, 3, 5);
+  camera.lookAt(0, 0, 0);
+
+  var light = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(light);
+  var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dLight.position.set(5, 10, 5);
+  scene.add(dLight);
+
+  var group = new THREE.Group();
+  scene.add(group);
+
+  var hexColors = colors && colors.length ? colors : ['#5D8A3C','#4AEDD9','#FFD700'];
+  var cubes = [];
+
+  // Build creature shape from blocks
+  var positions = [
+    [0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,2,0],[1,1,0],[-1,1,0],
+    [0,3,0],[0.5,0,-1],[-0.5,0,-1],[0,0,1],
+    [2,1,0],[2,0,0],[-2,1,0],[-2,0,0]
+  ];
+
+  var addedCubes = 0;
+  function addNextCube() {
+    if (addedCubes >= positions.length) return;
+    var pos = positions[addedCubes];
+    var colorHex = hexColors[addedCubes % hexColors.length];
+    var color = new THREE.Color(colorHex);
+    var geo = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+    var mat = new THREE.MeshLambertMaterial({ color: color });
+    var cube = new THREE.Mesh(geo, mat);
+    cube.position.set(pos[0], pos[1], pos[2]);
+    group.add(cube);
+    cubes.push(cube);
+    addedCubes++;
+    if (addedCubes < positions.length) {
+      setTimeout(addNextCube, 300);
+    }
+  }
+  addNextCube();
+
+  var angle = 0;
+  function animate() {
+    previewAnimId = requestAnimationFrame(animate);
+    angle += 0.02;
+    group.rotation.y = angle;
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function stopLoadingPreview() {
+  if (previewAnimId) { cancelAnimationFrame(previewAnimId); previewAnimId = null; }
+  if (previewRenderer) { previewRenderer.dispose(); previewRenderer = null; }
+  document.getElementById('preview-canvas-wrap').style.display = 'none';
+  document.getElementById('loading-blocks').style.display = 'flex';
+}
+
+// ── 3D RESULT VIEWER ──
+function start3DViewer(colors, canvasId) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+  renderer.setSize(canvas.offsetWidth || 320, canvas.offsetHeight || 280);
+  renderer.setClearColor(0x0a0a0a, 1);
+  resultRenderer = renderer;
+
+  var scene = new THREE.Scene();
+  resultScene = scene;
+
+  var camera = new THREE.PerspectiveCamera(45, (canvas.offsetWidth || 320) / (canvas.offsetHeight || 280), 0.1, 100);
+  camera.position.set(4, 3, 6);
+  camera.lookAt(0, 1, 0);
+
+  var light = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(light);
+  var dLight = new THREE.DirectionalLight(0xffffff, 1);
+  dLight.position.set(5, 10, 5);
+  scene.add(dLight);
+  var dLight2 = new THREE.DirectionalLight(0x4AEDD9, 0.3);
+  dLight2.position.set(-5, -5, -5);
+  scene.add(dLight2);
+
+  var group = new THREE.Group();
+  scene.add(group);
+
+  var hexColors = colors && colors.length ? colors : ['#5D8A3C','#4AEDD9','#FFD700'];
+
+  var positions = [
+    [0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,2,0],[1,1,0],[-1,1,0],
+    [0,3,0],[0.5,0,-1],[-0.5,0,-1],[0,0,1],
+    [2,1,0],[2,0,0],[-2,1,0],[-2,0,0]
+  ];
+
+  positions.forEach(function(pos, i) {
+    var colorHex = hexColors[i % hexColors.length];
+    var color = new THREE.Color(colorHex);
+    var geo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+    var mat = new THREE.MeshLambertMaterial({ color: color });
+    var cube = new THREE.Mesh(geo, mat);
+    cube.position.set(pos[0], pos[1], pos[2]);
+    group.add(cube);
+
+    var edgeGeo = new THREE.EdgesGeometry(geo);
+    var edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 });
+    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
+    cube.add(edges);
+  });
+
+  var angle = 0;
+  var isDragging = false;
+  var lastX = 0;
+
+  canvas.addEventListener('mousedown', function(e) { isDragging = true; lastX = e.clientX; });
+  canvas.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    var dx = e.clientX - lastX;
+    group.rotation.y += dx * 0.01;
+    lastX = e.clientX;
+  });
+  canvas.addEventListener('mouseup', function() { isDragging = false; });
+  canvas.addEventListener('touchstart', function(e) { lastX = e.touches[0].clientX; });
+  canvas.addEventListener('touchmove', function(e) {
+    var dx = e.touches[0].clientX - lastX;
+    group.rotation.y += dx * 0.01;
+    lastX = e.touches[0].clientX;
+    e.preventDefault();
+  });
+
+  function animate() {
+    resultAnimId = requestAnimationFrame(animate);
+    if (!isDragging) { angle += 0.008; group.rotation.y = angle; }
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+// Load steps
+var loadSteps = [
   {t:'Initialising AI...', p:10},
-  {t:'Analysing your input...', p:25},
-  {t:'Generating 3D model...', p:45},
-  {t:'Creating textures...', p:62},
-  {t:'Building behaviors...', p:78},
+  {t:'Analysing your input...', p:22},
+  {t:'Designing creature shape...', p:38},
+  {t:'Generating color palette...', p:52},
+  {t:'Building 3D model...', p:65},
+  {t:'Setting behaviors...', p:78},
   {t:'Packaging addon files...', p:92},
   {t:'Almost ready...', p:99},
 ];
 
-async function simulate() {
-  const name = document.getElementById('aname').value.trim();
-  const desc = document.getElementById('adesc').value.trim();
+async function generate() {
+  var name = document.getElementById('aname').value.trim();
+  var desc = document.getElementById('adesc').value.trim();
 
   document.getElementById('loading').classList.add('show');
 
   // Start loading animation
-  let i = 0;
-  function nextStep() {
+  var i = 0;
+  var loadInterval = setInterval(function() {
     if (i < loadSteps.length) {
       document.getElementById('load-status').textContent = loadSteps[i].t;
       document.getElementById('load-bar').style.width = loadSteps[i].p + '%';
       i++;
-      setTimeout(nextStep, 850);
     }
-  }
-  nextStep();
+  }, 900);
+
+  // Start 3D preview after a short delay
+  setTimeout(function() {
+    startLoadingPreview(['#5D8A3C','#4AEDD9','#FFD700','#8B5E3C','#f0f0f0']);
+  }, 1200);
 
   try {
-    const body = {
-      addonType,
+    var body = {
+      addonType: addonType,
       addonName: name,
       description: desc,
-      behavior: behavior || 'Default',
+      behavior: behavior || 'Passive',
       photo: photoUrl || null
     };
 
-    const response = await fetch('/api/generate', {
+    var response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
-    const data = await response.json();
+    var data = await response.json();
 
+    clearInterval(loadInterval);
+    stopLoadingPreview();
     document.getElementById('loading').classList.remove('show');
     document.getElementById('load-bar').style.width = '0%';
+    document.getElementById('load-status').textContent = 'Initialising AI...';
 
     if (!response.ok || !data.success) {
       showErr(data.error || 'Generation failed. Please try again.');
       return;
     }
 
+    resultAddon = data.addon;
+    resultFiles = data.files;
     showSuccess(data.addon, data.files);
 
   } catch (err) {
+    clearInterval(loadInterval);
+    stopLoadingPreview();
     document.getElementById('loading').classList.remove('show');
     document.getElementById('load-bar').style.width = '0%';
     showErr('Something went wrong. Please try again.');
@@ -456,95 +647,72 @@ async function simulate() {
 }
 
 function showSuccess(addon, files) {
-  const colors = addon.colors || [];
-  const swatches = colors.map(c => `<div style="width:28px;height:28px;background:${c};border:2px solid #333;display:inline-block;margin:2px;" title="${c}"></div>`).join('');
+  var colors = addon.colors || ['#5D8A3C','#4AEDD9','#FFD700'];
 
-  document.getElementById('s3').innerHTML = `
-    <div class="card success-card">
-      <span class="success-icon">🎉</span>
-      <div class="success-title">Addon Ready!</div>
-      <div class="success-text">Your AI generated Minecraft Bedrock addon is ready to install!</div>
+  document.getElementById('s3').innerHTML =
+    '<div class="card success-card">' +
+      '<span class="success-icon">🎉</span>' +
+      '<div class="success-title">Addon Ready!</div>' +
+      '<div class="success-text">Your AI generated Minecraft Bedrock addon is ready!</div>' +
+      '<div class="viewer-wrap"><canvas id="result-canvas"></canvas></div>' +
+      '<div class="viewer-hint">🖱 Drag to rotate</div>' +
+      '<div class="stats-grid">' +
+        '<div class="stat-box"><span class="stat-label">HEALTH</span><span class="stat-val red">❤ ' + (addon.health || 20) + '</span></div>' +
+        '<div class="stat-box"><span class="stat-label">ATTACK</span><span class="stat-val gold">⚔ ' + (addon.attack || 4) + '</span></div>' +
+        '<div class="stat-box"><span class="stat-label">SIZE</span><span class="stat-val diamond">' + (addon.size || 'medium') + '</span></div>' +
+      '</div>' +
+      (addon.lore ? '<div style="font-family:VT323,monospace;font-size:17px;color:var(--text-muted);font-style:italic;margin-bottom:0.75rem;padding:0 1rem;">"' + addon.lore + '"</div>' : '') +
+      '<div style="font-family:Press Start 2P,monospace;font-size:6px;color:var(--text-muted);margin-bottom:0.4rem;">ADDON NAME</div>' +
+      '<div style="font-family:VT323,monospace;font-size:20px;color:var(--grass-light);margin-bottom:0.75rem;">' + addon.addonName + '</div>' +
+      '<button onclick="downloadAddon()" style="width:100%;padding:14px 0 16px;font-family:Press Start 2P,monospace;font-size:10px;background:var(--grass);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 0 #2a4a1a;margin-bottom:0.5rem;letter-spacing:0.5px;">⬇ Install to Minecraft</button>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:0.5rem;">' +
+        '<a href="create.html" style="display:block;padding:9px 0 11px;font-family:Press Start 2P,monospace;font-size:7px;text-align:center;background:transparent;color:var(--text-muted);border:2px solid var(--border);text-decoration:none;">Create Another</a>' +
+        '<button onclick="alert(\'My Addons coming in Phase 7!\')" style="padding:9px 0 11px;font-family:Press Start 2P,monospace;font-size:7px;background:transparent;color:var(--text-muted);border:2px solid var(--border);cursor:pointer;">My Addons</button>' +
+        '<button onclick="alert(\'Community sharing coming in Phase 7!\')" style="padding:9px 0 11px;font-family:Press Start 2P,monospace;font-size:7px;background:transparent;color:var(--text-muted);border:2px solid var(--border);cursor:pointer;">Share</button>' +
+      '</div>' +
+      '<div style="font-family:Press Start 2P,monospace;font-size:6px;color:var(--text-dim);margin-top:1rem;line-height:1.8;">To install: download → open the file → Minecraft installs it automatically</div>' +
+    '</div>';
 
-      <div style="background:#111;border:2px solid var(--border);padding:1rem;margin:1rem 0;text-align:left;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">ADDON NAME</div>
-        <div style="font-family:'VT323',monospace;font-size:22px;color:var(--grass-light);margin-bottom:0.75rem;">${addon.addonName}</div>
-
-        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">TYPE & BEHAVIOR</div>
-        <div style="font-family:'VT323',monospace;font-size:18px;color:var(--text);margin-bottom:0.75rem;">${addon.addonType === 'mob' ? '🦎 Custom Mob' : '🧱 Custom Block'} — ${addon.behavior}</div>
-
-        ${addon.lore ? `
-        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.5rem;">LORE</div>
-        <div style="font-family:'VT323',monospace;font-size:17px;color:var(--text-muted);margin-bottom:0.75rem;font-style:italic;">"${addon.lore}"</div>
-        ` : ''}
-
-        ${addon.addonType === 'mob' ? `
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:0.75rem;">
-          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">HEALTH</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#e05252;">❤ ${addon.health || 20}</div>
-          </div>
-          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">ATTACK</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--gold);">⚔ ${addon.attack || 4}</div>
-          </div>
-          <div style="background:#1a1a1a;border:1px solid var(--border);padding:6px;text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-muted);">SIZE</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--diamond);">${addon.size || 'medium'}</div>
-          </div>
-        </div>
-        ` : ''}
-
-        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-muted);margin-bottom:0.4rem;">COLOR PALETTE</div>
-        <div style="margin-bottom:0.5rem;">${swatches}</div>
-      </div>
-
-      <button class="btn btn-primary" onclick="downloadAddon()" style="width:100%;margin-bottom:0.5rem;font-size:10px;padding:14px 0 16px;">
-        ⬇ Install to Minecraft
-      </button>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:0.5rem;">
-        <a href="create.html" class="btn btn-back" style="text-align:center;font-size:7px;padding:9px 0 11px;">Create Another</a>
-        <button class="btn btn-back" style="font-size:7px;padding:9px 0 11px;" onclick="alert('My Addons coming in Phase 7!')">My Addons</button>
-        <button class="btn btn-back" style="font-size:7px;padding:9px 0 11px;" onclick="alert('Community sharing coming in Phase 7!')">Share</button>
-      </div>
-
-      <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-dim);margin-top:1rem;line-height:1.8;">
-        To install: download the file → open it on your device → Minecraft will install it automatically
-      </div>
-    </div>
-  `;
-
-  // Store files for download
-  window._addonFiles = files;
-  window._addonName = addon.identifier || addon.addonName.toLowerCase().replace(/\s+/g,'_');
   window.scrollTo(0,0);
+
+  // Start 3D viewer after DOM updates
+  setTimeout(function() {
+    start3DViewer(colors, 'result-canvas');
+  }, 100);
 }
 
 async function downloadAddon() {
-  if (!window._addonFiles) { showErr('No addon data found. Please generate again.'); return; }
+  if (!resultFiles) { showErr('No addon data found. Please generate again.'); return; }
 
   try {
-    // Load JSZip
     if (!window.JSZip) {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      await new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
     }
 
-    const zip = new JSZip();
-    const files = window._addonFiles;
+    var zip = new JSZip();
+    var files = resultFiles;
 
-    for (const [path, content] of Object.entries(files)) {
+    Object.keys(files).forEach(function(path) {
+      var content = files[path];
       if (path.endsWith('.png')) {
         zip.file(path, content, { base64: true });
       } else {
         zip.file(path, content);
       }
-    }
+    });
 
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = await zip.generateAsync({ type: 'blob' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
-    a.download = window._addonName + '.mcaddon';
+    var addonName = resultAddon && resultAddon.identifier ? resultAddon.identifier : 'addon';
+    a.download = addonName + '.mcaddon';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -553,16 +721,6 @@ async function downloadAddon() {
   } catch (err) {
     showErr('Download failed: ' + err.message);
   }
-}
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
 }
 </script>
 </body>
