@@ -635,6 +635,7 @@ async function generate() {
 
     resultAddon = data.addon;
     resultFiles = data.files;
+    saveAddonToHistory(data.addon);
     showSuccess(data.addon, data.files);
 
   } catch (err) {
@@ -679,6 +680,29 @@ function showSuccess(addon, files) {
   setTimeout(function() {
     start3DViewer(colors, 'result-canvas');
   }, 100);
+}
+
+async function saveAddonToHistory(addon) {
+  try {
+    var session = await sc.auth.getSession();
+    if (!session.data.session) return;
+    var userId = session.data.session.user.id;
+    await sc.from('addons').insert({
+      user_id: userId,
+      addon_name: addon.addonName,
+      addon_type: addon.addonType,
+      description: addon.description,
+      behavior: addon.behavior,
+      colors: addon.colors || [],
+      health: addon.health || 20,
+      attack: addon.attack || 4,
+      size: addon.size || 'medium',
+      lore: addon.lore || '',
+      identifier: addon.identifier || ''
+    });
+  } catch (err) {
+    console.log('Could not save to history:', err.message);
+  }
 }
 
 async function downloadAddon() {
