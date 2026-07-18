@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --bg-card: #242424; --border: #333;
+  --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888; --text-dim: #4a4a4a;
+  --red: #e05252;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; }
+nav { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: #0f0f0f; border-bottom: 2px solid #252525; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; text-decoration: none; }
+.nav-logo span { color: var(--diamond); }
+.nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.nav-user { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); }
+.nav-user span { color: var(--diamond); }
+.nav-btn { padding: 5px 10px 6px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.15s; }
+.nav-btn:hover { border-color: var(--grass); color: var(--grass-light); }
+.nav-btn.red:hover { border-color: var(--red); color: var(--red); }
+.pixel-divider { width: 100%; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); }
+main { flex: 1; padding: 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+.page-title { font-family: 'Press Start 2P', monospace; font-size: clamp(11px, 1.8vw, 15px); color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.3rem; }
+.page-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); margin-bottom: 1.25rem; letter-spacing: 1px; }
+
+/* SEARCH AND FILTER */
+.search-bar { display: flex; gap: 2px; margin-bottom: 1rem; }
+.search-input { flex: 1; padding: 9px 12px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text); font-family: 'VT323', monospace; font-size: 18px; outline: none; transition: border-color 0.15s; }
+.search-input:focus { border-color: var(--grass); }
+.search-input::placeholder { color: var(--text-dim); }
+.search-btn { padding: 9px 16px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: var(--grass); color: #fff; border: none; cursor: pointer; box-shadow: 0 3px 0 #2a4a1a; }
+.search-btn:hover { background: var(--grass-light); }
+.filter-bar { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filter-btn { padding: 5px 12px 7px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+.filter-btn:hover { border-color: var(--grass-light); color: var(--text); }
+.filter-btn.active { border-color: var(--grass); background: #1a2a1a; color: var(--grass-light); }
+
+/* FEATURED SECTION */
+.section-label { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--gold); text-shadow: 1px 1px 0 #8B6914; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.featured-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2px; margin-bottom: 2rem; }
+.featured-card { background: #1a1a1a; border: 2px solid var(--gold); padding: 1.25rem; position: relative; transition: transform 0.15s; }
+.featured-card:hover { transform: translateY(-2px); }
+.featured-badge { position: absolute; top: -1px; right: 12px; background: var(--gold); color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 3px 8px; }
+
+/* ALL ADDONS GRID */
+.addons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2px; }
+.addon-card { background: var(--bg-card); border: 2px solid var(--border); padding: 1rem; transition: border-color 0.2s, transform 0.15s; }
+.addon-card:hover { border-color: var(--grass); transform: translateY(-2px); }
+.addon-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+.addon-type-icon { font-size: 28px; }
+.addon-rating { font-family: 'VT323', monospace; font-size: 16px; color: var(--gold); }
+.addon-name { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.35rem; line-height: 1.6; }
+.addon-desc { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-muted); line-height: 1.3; margin-bottom: 0.6rem; }
+.addon-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.tag { font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; background: #1a2a1a; border: 1px solid var(--grass); color: var(--grass-light); }
+.tag.blue { background: #1a1a2e; border-color: var(--diamond); color: var(--diamond); }
+.addon-colors { display: flex; gap: 2px; margin-bottom: 0.6rem; }
+.color-dot { width: 14px; height: 14px; border: 1px solid #333; }
+.addon-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.addon-downloads { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-dim); }
+.addon-creator { font-family: 'VT323', monospace; font-size: 15px; color: var(--text-dim); }
+.addon-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 0.75rem; }
+.stat-mini { background: #1a1a1a; border: 1px solid var(--border); padding: 3px; text-align: center; }
+.stat-mini-label { font-family: 'Press Start 2P', monospace; font-size: 5px; color: var(--text-dim); display: block; }
+.stat-mini-val { font-family: 'Press Start 2P', monospace; font-size: 8px; }
+.addon-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.btn-download { padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-shadow: 1px 1px 0 #000; box-shadow: 0 3px 0 #2a4a1a; transition: transform 0.1s; }
+.btn-download:hover { background: var(--grass-light); transform: translateY(-1px); }
+.btn-rate { padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.btn-rate:hover { border-color: var(--gold); color: var(--gold); }
+
+/* RATING MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg-card); border: 2px solid var(--grass); padding: 1.5rem; max-width: 400px; width: 100%; }
+.modal-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--grass-light); margin-bottom: 1rem; line-height: 1.6; }
+.stars { display: flex; gap: 6px; margin-bottom: 1rem; }
+.star { font-size: 28px; cursor: pointer; transition: transform 0.1s; filter: grayscale(1); }
+.star:hover, .star.active { filter: none; transform: scale(1.1); }
+.review-input { width: 100%; padding: 9px 10px; background: #1a1a1a; border: 2px solid var(--border); color: var(--text); font-family: 'VT323', monospace; font-size: 17px; outline: none; resize: vertical; min-height: 70px; margin-bottom: 1rem; }
+.review-input:focus { border-color: var(--grass); }
+.modal-btns { display: flex; gap: 6px; }
+.btn-submit-rating { flex: 1; padding: 10px 0 12px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: var(--grass); color: #fff; border: none; cursor: pointer; box-shadow: 0 3px 0 #2a4a1a; }
+.btn-cancel { padding: 10px 16px 12px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; }
+.msg { font-family: 'VT323', monospace; font-size: 16px; padding: 7px 10px; margin-bottom: 0.75rem; display: none; }
+.msg.success { background: #1a2e1a; border: 1px solid var(--grass); color: var(--grass-light); display: block; }
+.msg.error { background: #2e1a1a; border: 1px solid var(--red); color: var(--red); display: block; }
+.empty-state { text-align: center; padding: 3rem 1rem; }
+.empty-icon { font-size: 48px; display: block; margin-bottom: 1rem; }
+.empty-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.6; }
+.empty-text { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-dim); margin-bottom: 1.5rem; }
+.btn-create { padding: 10px 20px 12px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-decoration: none; display: inline-block; box-shadow: 0 3px 0 #2a4a1a; }
+footer { background: #0d0d0d; border-top: 2px solid #1f1f1f; padding: 1rem 1.5rem; text-align: center; color: var(--text-dim); }
+.footer-logo { font-family: 'Press Start 2P', monospace; font-size: 10px; margin-bottom: 0.3rem; }
+.fl-a { color: var(--grass-light); }
+.fl-s { color: var(--diamond); }
+footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Minevixel<span> Studio</span></a>
+  <div class="nav-right">
+    <span class="nav-user">Hey, <span id="nav-user">Creator</span></span>
+    <a href="auth.html" class="nav-btn">Dashboard</a>
+    <a href="create.html" class="nav-btn">+ Create</a>
+    <a href="history.html" class="nav-btn">My Addons</a>
+    <button class="nav-btn red" id="signout-btn">Sign Out</button>
+  </div>
+</nav>
+<div class="pixel-divider"></div>
+
+<main>
+  <div class="page-title">Community Gallery</div>
+  <div class="page-sub">Discover and download addons created by the Minevixel Studio community</div>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="Search addons by name or description...">
+    <button class="search-btn" onclick="searchAddons()">Search</button>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterBy('all', this)">All</button>
+    <button class="filter-btn" onclick="filterBy('mob', this)">🦎 Mobs</button>
+    <button class="filter-btn" onclick="filterBy('block', this)">🧱 Blocks</button>
+    <button class="filter-btn" onclick="filterBy('Hostile', this)">⚔ Hostile</button>
+    <button class="filter-btn" onclick="filterBy('Passive', this)">🌿 Passive</button>
+    <button class="filter-btn" onclick="filterBy('Companion', this)">🤝 Companion</button>
+    <button class="filter-btn" onclick="filterBy('Boss', this)">👑 Boss</button>
+  </div>
+
+  <div class="section-label">⭐ Featured Addons</div>
+  <div id="featured-container">
+    <div style="font-family:VT323,monospace;font-size:18px;color:var(--text-dim);padding:1rem 0;">Loading featured addons...</div>
+  </div>
+
+  <div class="section-label">🌍 All Community Addons</div>
+  <div id="addons-container">
+    <div style="font-family:VT323,monospace;font-size:18px;color:var(--text-dim);padding:1rem 0;">Loading addons...</div>
+  </div>
+</main>
+
+<!-- RATING MODAL -->
+<div class="modal-overlay" id="rating-modal">
+  <div class="modal">
+    <div class="modal-title">Rate this Addon</div>
+    <div id="rating-msg" class="msg"></div>
+    <div class="stars" id="stars">
+      <span class="star" onclick="setStar(1)">⭐</span>
+      <span class="star" onclick="setStar(2)">⭐</span>
+      <span class="star" onclick="setStar(3)">⭐</span>
+      <span class="star" onclick="setStar(4)">⭐</span>
+      <span class="star" onclick="setStar(5)">⭐</span>
+    </div>
+    <textarea class="review-input" id="review-input" placeholder="Write a review (optional)..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-submit-rating" onclick="submitRating()">Submit Rating</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="pixel-divider"></div>
+<footer>
+  <div class="footer-logo"><span class="fl-a">MINEVIXEL</span> <span class="fl-s">STUDIO</span></div>
+  <p>© 2026 Minevixel Studio. All rights reserved.</p>
+</footer>
+
+<script>
+var SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
+var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
+var sc = window.supabase.createClient(SURL, SKEY);
+
+var currentUser = null;
+var allAddons = [];
+var currentFilter = 'all';
+var currentAddonId = null;
+var selectedStar = 0;
+
+sc.auth.getSession().then(function(res) {
+  var session = res.data.session;
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+  var u = session.user.user_metadata && session.user.user_metadata.username ? session.user.user_metadata.username : session.user.email.split('@')[0];
+  document.getElementById('nav-user').textContent = u;
+  loadAddons();
+});
+
+document.getElementById('signout-btn').onclick = async function() {
+  await sc.auth.signOut();
+  window.location.href = 'auth.html';
+};
+
+async function loadAddons() {
+  try {
+    var result = await sc.from('addons').select('*').eq('is_shared', true).order('created_at', { ascending: false });
+    if (result.error) throw result.error;
+    allAddons = result.data || [];
+    renderAddons(allAddons);
+  } catch (err) {
+    document.getElementById('addons-container').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><div class="empty-title">Could not load addons</div></div>';
+  }
+}
+
+function renderAddons(addons) {
+  // Featured — top rated
+  var featured = addons.filter(function(a) { return a.rating >= 4 || a.downloads >= 10; }).slice(0, 3);
+  
+  if (featured.length === 0) {
+    document.getElementById('featured-container').innerHTML = '<div style="font-family:VT323,monospace;font-size:18px;color:var(--text-dim);padding:0.5rem 0 1rem;">No featured addons yet — be the first to create and share one!</div>';
+  } else {
+    var featHTML = '<div class="featured-grid">';
+    featured.forEach(function(addon) {
+      featHTML += buildAddonCard(addon, true);
+    });
+    featHTML += '</div>';
+    document.getElementById('featured-container').innerHTML = featHTML;
+  }
+
+  if (addons.length === 0) {
+    document.getElementById('addons-container').innerHTML =
+      '<div class="empty-state">' +
+        '<span class="empty-icon">🌍</span>' +
+        '<div class="empty-title">No Addons Shared Yet</div>' +
+        '<div class="empty-text">Be the first to share your addon with the community!</div>' +
+        '<a href="create.html" class="btn-create">+ Create and Share</a>' +
+      '</div>';
+    return;
+  }
+
+  var html = '<div class="addons-grid">';
+  addons.forEach(function(addon) {
+    html += buildAddonCard(addon, false);
+  });
+  html += '</div>';
+  document.getElementById('addons-container').innerHTML = html;
+}
+
+function buildAddonCard(addon, featured) {
+  var icon = addon.addon_type === 'mob' ? '🦎' : '🧱';
+  var colors = addon.colors || [];
+  var colorDots = colors.map(function(c) { return '<div class="color-dot" style="background:' + c + ';"></div>'; }).join('');
+  var stars = '';
+  for (var i = 1; i <= 5; i++) { stars += i <= Math.round(addon.rating || 0) ? '⭐' : '☆'; }
+  var cardClass = featured ? 'featured-card' : 'addon-card';
+  var badge = featured ? '<div class="featured-badge">⭐ FEATURED</div>' : '';
+
+  return '<div class="' + cardClass + '">' +
+    badge +
+    '<div class="addon-card-top">' +
+      '<span class="addon-type-icon">' + icon + '</span>' +
+      '<span class="addon-rating">' + stars + ' (' + (addon.rating_count || 0) + ')</span>' +
+    '</div>' +
+    '<div class="addon-name">' + (addon.addon_name || 'Unnamed') + '</div>' +
+    '<div class="addon-desc">' + (addon.description ? addon.description.substring(0, 80) + (addon.description.length > 80 ? '...' : '') : '') + '</div>' +
+    '<div class="addon-tags">' +
+      '<span class="tag">' + (addon.addon_type || 'mob') + '</span>' +
+      '<span class="tag blue">' + (addon.behavior || 'Passive') + '</span>' +
+    '</div>' +
+    (colors.length ? '<div class="addon-colors">' + colorDots + '</div>' : '') +
+    '<div class="addon-stats">' +
+      '<div class="stat-mini"><span class="stat-mini-label">HEALTH</span><span class="stat-mini-val" style="color:#e05252;">❤ ' + (addon.health || 20) + '</span></div>' +
+      '<div class="stat-mini"><span class="stat-mini-label">ATTACK</span><span class="stat-mini-val" style="color:var(--gold);">⚔ ' + (addon.attack || 4) + '</span></div>' +
+      '<div class="stat-mini"><span class="stat-mini-label">SIZE</span><span class="stat-mini-val" style="color:var(--diamond);">' + (addon.size || 'M') + '</span></div>' +
+    '</div>' +
+    '<div class="addon-meta">' +
+      '<span class="addon-downloads">⬇ ' + (addon.downloads || 0) + ' downloads</span>' +
+    '</div>' +
+    '<div class="addon-actions">' +
+      '<button class="btn-download" onclick="downloadCommunityAddon(\'' + addon.id + '\')">⬇ Download</button>' +
+      '<button class="btn-rate" onclick="openRating(\'' + addon.id + '\')">⭐ Rate</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function filterBy(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  var filtered = type === 'all' ? allAddons : allAddons.filter(function(a) {
+    return a.addon_type === type || a.behavior === type;
+  });
+  renderAddons(filtered);
+}
+
+function searchAddons() {
+  var query = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!query) { renderAddons(allAddons); return; }
+  var filtered = allAddons.filter(function(a) {
+    return (a.addon_name && a.addon_name.toLowerCase().includes(query)) ||
+           (a.description && a.description.toLowerCase().includes(query));
+  });
+  renderAddons(filtered);
+}
+
+document.getElementById('search-input').onkeypress = function(e) {
+  if (e.key === 'Enter') searchAddons();
+};
+
+async function downloadCommunityAddon(addonId) {
+  try {
+    await sc.from('addons').update({ downloads: sc.rpc('increment') }).eq('id', addonId);
+  } catch (e) {}
+  alert('Full community addon download coming in Phase 8! The addon data has been recorded.');
+}
+
+function openRating(addonId) {
+  currentAddonId = addonId;
+  selectedStar = 0;
+  document.querySelectorAll('.star').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('review-input').value = '';
+  document.getElementById('rating-msg').className = 'msg';
+  document.getElementById('rating-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('rating-modal').classList.remove('show');
+  currentAddonId = null;
+}
+
+function setStar(n) {
+  selectedStar = n;
+  document.querySelectorAll('.star').forEach(function(s, i) {
+    s.classList.toggle('active', i < n);
+  });
+}
+
+async function submitRating() {
+  if (!selectedStar) {
+    document.getElementById('rating-msg').className = 'msg error';
+    document.getElementById('rating-msg').textContent = 'Please select a star rating!';
+    return;
+  }
+  var review = document.getElementById('review-input').value.trim();
+  try {
+    var result = await sc.from('ratings').insert({
+      addon_id: currentAddonId,
+      user_id: currentUser.id,
+      rating: selectedStar,
+      review: review || null
+    });
+    if (result.error) throw result.error;
+
+    // Update addon rating average
+    var ratingsResult = await sc.from('ratings').select('rating').eq('addon_id', currentAddonId);
+    if (!ratingsResult.error && ratingsResult.data.length > 0) {
+      var avg = ratingsResult.data.reduce(function(sum, r) { return sum + r.rating; }, 0) / ratingsResult.data.length;
+      await sc.from('addons').update({ rating: avg, rating_count: ratingsResult.data.length }).eq('id', currentAddonId);
+    }
+
+    document.getElementById('rating-msg').className = 'msg success';
+    document.getElementById('rating-msg').textContent = 'Rating submitted! Thank you.';
+    setTimeout(function() { closeModal(); loadAddons(); }, 1500);
+  } catch (err) {
+    document.getElementById('rating-msg').className = 'msg error';
+    document.getElementById('rating-msg').textContent = err.message.includes('unique') ? 'You have already rated this addon!' : 'Could not submit rating. Try again.';
+  }
+}
+</script>
+</body>
+</html>

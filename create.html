@@ -166,6 +166,7 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
   <div class="nav-right">
     <span class="nav-user">Hey, <span id="nav-user">Creator</span></span>
     <a href="auth.html" class="nav-btn">Dashboard</a>
+    <a href="community.html" class="nav-btn">Community</a>
     <button class="nav-btn red" id="signout-btn">Sign Out</button>
   </div>
 </nav>
@@ -680,6 +681,29 @@ function showSuccess(addon, files) {
   setTimeout(function() {
     start3DViewer(colors, 'result-canvas');
   }, 100);
+}
+
+async function shareAddon() {
+  if (!resultAddon) { return; }
+  try {
+    var session = await sc.auth.getSession();
+    if (!session.data.session) return;
+    var userId = session.data.session.user.id;
+
+    // Find the addon in database and share it
+    var result = await sc.from('addons')
+      .update({ is_shared: true })
+      .eq('user_id', userId)
+      .eq('addon_name', resultAddon.addonName)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (result.error) throw result.error;
+    alert('Your addon has been shared to the community gallery!');
+    window.location.href = 'community.html';
+  } catch (err) {
+    alert('Could not share addon: ' + err.message);
+  }
 }
 
 async function saveAddonToHistory(addon) {
