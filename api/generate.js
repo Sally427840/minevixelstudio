@@ -125,7 +125,7 @@ export default async function handler(req, res) {
       'minecraft:navigation.walk': { can_path_over_water: true },
       'minecraft:movement.basic': {},
       'minecraft:jump.static': {},
-      'minecraft:can_climb': {},
+      'minecraft:can_climb': {},'minecraft:damage_sensor': { triggers: { cause: 'all', deals_damage: true } },
       'minecraft:behavior.random_stroll': { priority: 8, speed_multiplier: 0.8 },
       'minecraft:behavior.look_at_player': { priority: 9, look_distance: 6, probability: 0.02 },
       'minecraft:behavior.random_look_around': { priority: 10 }
