@@ -164,6 +164,10 @@ async function loadAddons(userId) {
           '<div class="stat-mini"><span class="stat-mini-label">SIZE</span><span class="stat-mini-val" style="color:var(--diamond);">' + (addon.size || 'M') + '</span></div>' +
         '</div>' +
         '<div class="addon-card-date">Created ' + date + '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:0.5rem;">' +
+          '<button onclick="shareAddon('' + addon.id + '', ' + (addon.is_shared ? 'true' : 'false') + ')" style="padding:8px 0 10px;font-family:Press Start 2P,monospace;font-size:6px;background:' + (addon.is_shared ? '#1a2a1a' : 'transparent') + ';color:' + (addon.is_shared ? 'var(--grass-light)' : 'var(--text-muted)') + ';border:2px solid ' + (addon.is_shared ? 'var(--grass)' : 'var(--border)') + ';cursor:pointer;">' + (addon.is_shared ? '✔ Shared' : 'Share') + '</button>' +
+          '<button onclick="deleteAddon('' + addon.id + '')" style="padding:8px 0 10px;font-family:Press Start 2P,monospace;font-size:6px;background:transparent;color:var(--text-muted);border:2px solid var(--border);cursor:pointer;">Delete</button>' +
+        '</div>' +
       '</div>';
     });
     html += '</div>';
@@ -171,6 +175,29 @@ async function loadAddons(userId) {
 
   } catch (err) {
     document.getElementById('addons-container').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><div class="empty-title">Error loading addons</div><div class="empty-text">' + err.message + '</div></div>';
+  }
+}
+
+async function shareAddon(addonId, isCurrentlyShared) {
+  try {
+    var newState = !isCurrentlyShared;
+    var result = await sc.from('addons').update({ is_shared: newState }).eq('id', addonId);
+    if (result.error) throw result.error;
+    alert(newState ? 'Addon shared to community gallery!' : 'Addon removed from community gallery.');
+    loadAddons(currentUser.id);
+  } catch (err) {
+    alert('Could not update sharing: ' + err.message);
+  }
+}
+
+async function deleteAddon(addonId) {
+  if (!confirm('Are you sure you want to delete this addon?')) return;
+  try {
+    var result = await sc.from('addons').delete().eq('id', addonId);
+    if (result.error) throw result.error;
+    loadAddons(currentUser.id);
+  } catch (err) {
+    alert('Could not delete addon: ' + err.message);
   }
 }
 </script>
