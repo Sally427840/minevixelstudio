@@ -684,21 +684,47 @@ function showSuccess(addon, files) {
 }
 
 async function shareAddon() {
-  if (!resultAddon) { return; }
+  if (!resultAddon) { alert('No addon to share. Please generate one first.'); return; }
   try {
     var session = await sc.auth.getSession();
-    if (!session.data.session) return;
+    if (!session.data.session) { window.location.href = 'auth.html'; return; }
     var userId = session.data.session.user.id;
 
-    // Find the addon in database and share it
-    var result = await sc.from('addons')
-      .update({ is_shared: true })
+    // First find the most recent addon by this user with this name
+    var findResult = await sc.from('addons')
+      .select('id')
       .eq('user_id', userId)
       .eq('addon_name', resultAddon.addonName)
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (result.error) throw result.error;
+    if (findResult.error) throw findResult.error;
+
+    if (!findResult.data || findResult.data.length === 0) {
+      // Addon not in database yet, save and share it
+      var insertResult = await sc.from('addons').insert({
+        user_id: userId,
+        addon_name: resultAddon.addonName,
+        addon_type: resultAddon.addonType,
+        description: resultAddon.description,
+        behavior: resultAddon.behavior,
+        colors: resultAddon.colors || [],
+        health: resultAddon.health || 20,
+        attack: resultAddon.attack || 4,
+        size: resultAddon.size || 'medium',
+        lore: resultAddon.lore || '',
+        identifier: resultAddon.identifier || '',
+        is_shared: true
+      });
+      if (insertResult.error) throw insertResult.error;
+    } else {
+      // Update existing addon to shared
+      var updateResult = await sc.from('addons')
+        .update({ is_shared: true })
+        .eq('id', findResult.data[0].id);
+      if (updateResult.error) throw updateResult.error;
+    }
+
     alert('Your addon has been shared to the community gallery!');
     window.location.href = 'community.html';
   } catch (err) {
