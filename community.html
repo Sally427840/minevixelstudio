@@ -249,8 +249,9 @@ function buildAddonCard(addon, featured) {
   var icon = addon.addon_type === 'mob' ? '🦎' : '🧱';
   var colors = addon.colors || [];
   var colorDots = colors.map(function(c) { return '<div class="color-dot" style="background:' + c + ';"></div>'; }).join('');
+  var ratingNum = Math.round(parseFloat(addon.rating) || 0);
   var stars = '';
-  for (var i = 1; i <= 5; i++) { stars += i <= Math.round(addon.rating || 0) ? '⭐' : '☆'; }
+  for (var i = 1; i <= 5; i++) { stars += i <= ratingNum ? '⭐' : '☆'; }
   var cardClass = featured ? 'featured-card' : 'addon-card';
   var badge = featured ? '<div class="featured-badge">⭐ FEATURED</div>' : '';
 
@@ -313,13 +314,28 @@ async function downloadCommunityAddon(addonId) {
   alert('Full community addon download coming in Phase 8! The addon data has been recorded.');
 }
 
-function openRating(addonId) {
+async function openRating(addonId) {
   currentAddonId = addonId;
   selectedStar = 0;
   document.querySelectorAll('.star').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById('review-input').value = '';
   document.getElementById('rating-msg').className = 'msg';
   document.getElementById('rating-modal').classList.add('show');
+
+  // Load existing rating if any
+  try {
+    var existing = await sc.from('ratings')
+      .select('rating, review')
+      .eq('addon_id', addonId)
+      .eq('user_id', currentUser.id)
+      .single();
+    if (existing.data) {
+      setStar(existing.data.rating);
+      document.getElementById('review-input').value = existing.data.review || '';
+      document.getElementById('rating-msg').className = 'msg success';
+      document.getElementById('rating-msg').textContent = 'You rated this before — update your rating below.';
+    }
+  } catch (e) {}
 }
 
 function closeModal() {
@@ -342,12 +358,12 @@ async function submitRating() {
   }
   var review = document.getElementById('review-input').value.trim();
   try {
-    var result = await sc.from('ratings').insert({
+    var result = await sc.from('ratings').upsert({
       addon_id: currentAddonId,
       user_id: currentUser.id,
       rating: selectedStar,
       review: review || null
-    });
+    }, { onConflict: 'addon_id,user_id' });
     if (result.error) throw result.error;
 
     // Update addon rating average

@@ -34,24 +34,28 @@ main { flex: 1; padding: 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%;
 .btn-create { padding: 10px 20px 12px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-decoration: none; display: inline-block; box-shadow: 0 3px 0 #2a4a1a; transition: transform 0.1s; }
 .btn-create:hover { background: var(--grass-light); transform: translateY(-1px); }
 .addons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2px; }
-.addon-card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.1rem; transition: border-color 0.2s, transform 0.15s; position: relative; }
+.addon-card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.1rem; transition: border-color 0.2s, transform 0.15s; }
 .addon-card:hover { border-color: var(--grass); transform: translateY(-2px); }
-.addon-card-type { font-size: 28px; display: block; margin-bottom: 0.5rem; }
-.addon-card-name { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--text); margin-bottom: 0.4rem; line-height: 1.6; }
-.addon-card-desc { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-muted); line-height: 1.35; margin-bottom: 0.75rem; }
-.addon-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.addon-type-icon { font-size: 28px; display: block; margin-bottom: 0.5rem; }
+.addon-name { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--text); margin-bottom: 0.4rem; line-height: 1.6; }
+.addon-desc { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-muted); line-height: 1.35; margin-bottom: 0.75rem; }
+.addon-meta { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0.6rem; }
 .addon-tag { font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 3px 6px; background: #1a2a1a; border: 1px solid var(--grass); color: var(--grass-light); }
 .addon-tag.blue { background: #1a1a2a; border-color: var(--diamond); color: var(--diamond); }
-.addon-tag.gold { background: #2a2a1a; border-color: var(--gold); color: var(--gold); }
-.addon-colors { display: flex; gap: 3px; margin-bottom: 0.75rem; }
+.addon-colors { display: flex; gap: 3px; margin-bottom: 0.6rem; }
 .color-dot { width: 16px; height: 16px; border: 1px solid #333; }
-.addon-card-date { font-family: 'VT323', monospace; font-size: 14px; color: var(--text-dim); margin-bottom: 0.75rem; }
-.addon-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 0.75rem; }
+.addon-date { font-family: 'VT323', monospace; font-size: 14px; color: var(--text-dim); margin-bottom: 0.75rem; }
+.addon-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 0.75rem; }
 .stat-mini { background: #1a1a1a; border: 1px solid var(--border); padding: 4px; text-align: center; }
 .stat-mini-label { font-family: 'Press Start 2P', monospace; font-size: 5px; color: var(--text-dim); display: block; }
 .stat-mini-val { font-family: 'Press Start 2P', monospace; font-size: 9px; }
-.loading-state { text-align: center; padding: 3rem 1rem; }
-.loading-state p { font-family: 'VT323', monospace; font-size: 20px; color: var(--text-muted); }
+.addon-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.btn-share { padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 6px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.btn-share:hover { border-color: var(--grass); color: var(--grass-light); }
+.btn-share.shared { background: #1a2a1a; border-color: var(--grass); color: var(--grass-light); }
+.btn-delete { padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 6px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.btn-delete:hover { border-color: var(--red); color: var(--red); }
+.loading-msg { font-family: 'VT323', monospace; font-size: 20px; color: var(--text-muted); padding: 3rem 1rem; text-align: center; }
 .empty-state { text-align: center; padding: 3rem 1rem; }
 .empty-icon { font-size: 48px; display: block; margin-bottom: 1rem; }
 .empty-title { font-family: 'Press Start 2P', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.6; }
@@ -87,7 +91,7 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
   </div>
 
   <div id="addons-container">
-    <div class="loading-state"><p>⏳ Loading your addons...</p></div>
+    <div class="loading-msg">Loading your addons...</div>
   </div>
 </main>
 
@@ -101,7 +105,6 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
 var SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
 var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
 var sc = window.supabase.createClient(SURL, SKEY);
-
 var currentUser = null;
 
 sc.auth.getSession().then(function(res) {
@@ -121,13 +124,8 @@ document.getElementById('signout-btn').onclick = async function() {
 async function loadAddons(userId) {
   try {
     var result = await sc.from('addons').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-
-    if (result.error) {
-      document.getElementById('addons-container').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><div class="empty-title">Could not load addons</div><div class="empty-text">' + result.error.message + '</div></div>';
-      return;
-    }
-
-    var addons = result.data;
+    if (result.error) throw result.error;
+    var addons = result.data || [];
     document.getElementById('addon-count').textContent = addons.length + ' addon' + (addons.length !== 1 ? 's' : '') + ' created';
 
     if (addons.length === 0) {
@@ -135,7 +133,7 @@ async function loadAddons(userId) {
         '<div class="empty-state">' +
           '<span class="empty-icon">📦</span>' +
           '<div class="empty-title">No Addons Yet</div>' +
-          '<div class="empty-text">You have not created any addons yet. Click the button above to create your first one!</div>' +
+          '<div class="empty-text">You have not created any addons yet!</div>' +
           '<a href="create.html" class="btn-create">+ Create Your First Addon</a>' +
         '</div>';
       return;
@@ -146,58 +144,77 @@ async function loadAddons(userId) {
       var icon = addon.addon_type === 'mob' ? '🦎' : '🧱';
       var date = new Date(addon.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
       var colors = addon.colors || [];
-      var colorDots = colors.map(function(c) { return '<div class="color-dot" style="background:' + c + ';" title="' + c + '"></div>'; }).join('');
+      var colorDots = colors.map(function(c) { return '<div class="color-dot" style="background:' + c + ';"></div>'; }).join('');
+      var isShared = addon.is_shared === true;
 
-      html += '<div class="addon-card">' +
-        '<span class="addon-card-type">' + icon + '</span>' +
-        '<div class="addon-card-name">' + (addon.addon_name || 'Unnamed Addon') + '</div>' +
-        '<div class="addon-card-desc">' + (addon.description ? addon.description.substring(0, 80) + (addon.description.length > 80 ? '...' : '') : '') + '</div>' +
-        '<div class="addon-card-meta">' +
-          '<span class="addon-tag">' + (addon.addon_type || 'mob') + '</span>' +
-          '<span class="addon-tag blue">' + (addon.behavior || 'Passive') + '</span>' +
-          '<span class="addon-tag gold">' + (addon.size || 'medium') + '</span>' +
-        '</div>' +
-        (colors.length ? '<div class="addon-colors">' + colorDots + '</div>' : '') +
-        '<div class="addon-card-stats">' +
-          '<div class="stat-mini"><span class="stat-mini-label">HEALTH</span><span class="stat-mini-val" style="color:#e05252;">❤ ' + (addon.health || 20) + '</span></div>' +
-          '<div class="stat-mini"><span class="stat-mini-label">ATTACK</span><span class="stat-mini-val" style="color:var(--gold);">⚔ ' + (addon.attack || 4) + '</span></div>' +
-          '<div class="stat-mini"><span class="stat-mini-label">SIZE</span><span class="stat-mini-val" style="color:var(--diamond);">' + (addon.size || 'M') + '</span></div>' +
-        '</div>' +
-        '<div class="addon-card-date">Created ' + date + '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:0.5rem;">' +
-          '<button onclick="shareAddon(\"' + addon.id + '\", ' + (addon.is_shared ? 'true' : 'false') + ')" style="padding:8px 0 10px;font-family:Press Start 2P,monospace;font-size:6px;background:' + (addon.is_shared ? '#1a2a1a' : 'transparent') + ';color:' + (addon.is_shared ? 'var(--grass-light)' : 'var(--text-muted)') + ';border:2px solid ' + (addon.is_shared ? 'var(--grass)' : 'var(--border)') + ';cursor:pointer;">' + (addon.is_shared ? '✔ Shared' : 'Share') + '</button>' +
-          '<button onclick="deleteAddon(\"' + addon.id + '\")" style="padding:8px 0 10px;font-family:Press Start 2P,monospace;font-size:6px;background:transparent;color:var(--text-muted);border:2px solid var(--border);cursor:pointer;">Delete</button>' +
-        '</div>' +
-      '</div>';
+      html += '<div class="addon-card" id="card-' + addon.id + '">';
+      html += '<span class="addon-type-icon">' + icon + '</span>';
+      html += '<div class="addon-name">' + (addon.addon_name || 'Unnamed') + '</div>';
+      html += '<div class="addon-desc">' + (addon.description ? addon.description.substring(0, 80) + (addon.description.length > 80 ? '...' : '') : '') + '</div>';
+      html += '<div class="addon-meta">';
+      html += '<span class="addon-tag">' + (addon.addon_type || 'mob') + '</span>';
+      html += '<span class="addon-tag blue">' + (addon.behavior || 'Passive') + '</span>';
+      html += '</div>';
+      if (colors.length) html += '<div class="addon-colors">' + colorDots + '</div>';
+      html += '<div class="addon-stats">';
+      html += '<div class="stat-mini"><span class="stat-mini-label">HEALTH</span><span class="stat-mini-val" style="color:#e05252;">❤ ' + (addon.health || 20) + '</span></div>';
+      html += '<div class="stat-mini"><span class="stat-mini-label">ATTACK</span><span class="stat-mini-val" style="color:var(--gold);">⚔ ' + (addon.attack || 4) + '</span></div>';
+      html += '<div class="stat-mini"><span class="stat-mini-label">SIZE</span><span class="stat-mini-val" style="color:var(--diamond);">' + (addon.size || 'M') + '</span></div>';
+      html += '</div>';
+      html += '<div class="addon-date">Created ' + date + '</div>';
+      html += '<div class="addon-btns">';
+      html += '<button class="btn-share' + (isShared ? ' shared' : '') + '" data-id="' + addon.id + '" data-shared="' + isShared + '" onclick="toggleShare(this)">' + (isShared ? '✔ Shared' : 'Share') + '</button>';
+      html += '<button class="btn-delete" data-id="' + addon.id + '" onclick="deleteAddon(this)">Delete</button>';
+      html += '</div>';
+      html += '</div>';
     });
     html += '</div>';
     document.getElementById('addons-container').innerHTML = html;
 
   } catch (err) {
-    document.getElementById('addons-container').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><div class="empty-title">Error loading addons</div><div class="empty-text">' + err.message + '</div></div>';
+    document.getElementById('addons-container').innerHTML = '<div class="loading-msg">Error: ' + err.message + '</div>';
   }
 }
 
-async function shareAddon(addonId, isCurrentlyShared) {
+async function toggleShare(btn) {
+  var addonId = btn.getAttribute('data-id');
+  var isShared = btn.getAttribute('data-shared') === 'true';
+  var newState = !isShared;
+
   try {
-    var newState = !isCurrentlyShared;
-    var result = await sc.from('addons').update({ is_shared: newState }).eq('id', addonId);
+    var result = await sc.from('addons')
+      .update({ is_shared: newState })
+      .eq('id', addonId)
+      .eq('user_id', currentUser.id);
+
     if (result.error) throw result.error;
-    alert(newState ? 'Addon shared to community gallery!' : 'Addon removed from community gallery.');
-    loadAddons(currentUser.id);
+
+    btn.setAttribute('data-shared', newState.toString());
+    btn.textContent = newState ? '✔ Shared' : 'Share';
+    if (newState) {
+      btn.classList.add('shared');
+      alert('Addon shared to community gallery!');
+    } else {
+      btn.classList.remove('shared');
+      alert('Addon removed from community gallery.');
+    }
   } catch (err) {
-    alert('Could not update sharing: ' + err.message);
+    alert('Could not update: ' + err.message);
   }
 }
 
-async function deleteAddon(addonId) {
+async function deleteAddon(btn) {
+  var addonId = btn.getAttribute('data-id');
   if (!confirm('Are you sure you want to delete this addon?')) return;
   try {
-    var result = await sc.from('addons').delete().eq('id', addonId);
+    var result = await sc.from('addons').delete().eq('id', addonId).eq('user_id', currentUser.id);
     if (result.error) throw result.error;
-    loadAddons(currentUser.id);
+    var card = document.getElementById('card-' + addonId);
+    if (card) card.remove();
+    var remaining = document.querySelectorAll('.addon-card').length;
+    document.getElementById('addon-count').textContent = remaining + ' addon' + (remaining !== 1 ? 's' : '') + ' created';
   } catch (err) {
-    alert('Could not delete addon: ' + err.message);
+    alert('Could not delete: ' + err.message);
   }
 }
 </script>
