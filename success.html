@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Payment Successful</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --bg-card: #242424; --border: #333;
+  --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+.success-card { background: var(--bg-card); border: 2px solid var(--grass); padding: 2.5rem; max-width: 480px; width: 100%; text-align: center; }
+.success-icon { font-size: 64px; display: block; margin-bottom: 1rem; animation: bounce 1s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.success-title { font-family: 'Press Start 2P', monospace; font-size: clamp(12px, 2vw, 16px); color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.75rem; line-height: 1.6; }
+.success-text { font-family: 'VT323', monospace; font-size: 19px; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+.plan-badge { display: inline-block; background: #1a2a1a; border: 2px solid var(--grass); color: var(--grass-light); font-family: 'Press Start 2P', monospace; font-size: 9px; padding: 6px 14px; margin-bottom: 1.5rem; letter-spacing: 1px; }
+.btn-dashboard { display: block; width: 100%; padding: 13px 0 15px; font-family: 'Press Start 2P', monospace; font-size: 9px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-decoration: none; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; margin-bottom: 2px; transition: transform 0.1s; letter-spacing: 0.5px; }
+.btn-dashboard:hover { background: var(--grass-light); transform: translateY(-2px); }
+.btn-create { display: block; width: 100%; padding: 13px 0 15px; font-family: 'Press Start 2P', monospace; font-size: 9px; background: transparent; color: var(--diamond); border: 2px solid var(--diamond); cursor: pointer; text-decoration: none; box-shadow: 0 4px 0 #1a6060; transition: transform 0.1s; letter-spacing: 0.5px; }
+.btn-create:hover { background: rgba(74,237,217,0.08); transform: translateY(-2px); }
+.pixel-divider { width: 100%; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="success-card">
+  <span class="success-icon">🎉</span>
+  <div class="pixel-divider"></div>
+  <div class="success-title">Payment Successful!</div>
+  <div class="success-text">Welcome to Minevixel Studio <span id="plan-name">Creator</span>! Your account has been upgraded and you now have access to all premium features.</div>
+  <div class="plan-badge" id="plan-badge">✔ CREATOR PLAN ACTIVE</div>
+  <a href="auth.html" class="btn-dashboard">Go to Dashboard</a>
+  <a href="create.html" class="btn-create">Start Creating Now</a>
+</div>
+
+<script>
+var params = new URLSearchParams(window.location.search);
+var plan = params.get('plan') || 'creator';
+var planNames = { creator: 'Creator', pro: 'Pro', credits: 'Credits' };
+var planLabels = { creator: '✔ CREATOR PLAN ACTIVE', pro: '✔ PRO PLAN ACTIVE', credits: '✔ CREDITS ADDED' };
+document.getElementById('plan-name').textContent = planNames[plan] || 'Creator';
+document.getElementById('plan-badge').textContent = planLabels[plan] || '✔ PLAN ACTIVE';
+</script>
+</body>
+</html>

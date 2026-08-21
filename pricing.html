@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --bg-card: #242424; --border: #333;
+  --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888; --text-dim: #4a4a4a;
+  --red: #e05252;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; }
+nav { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; background: #0f0f0f; border-bottom: 2px solid #252525; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; text-decoration: none; }
+.nav-logo span { color: var(--diamond); }
+.nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.nav-user { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); }
+.nav-user span { color: var(--diamond); }
+.nav-btn { padding: 5px 10px 6px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: transparent; color: var(--text-muted); border: 2px solid var(--border); cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.15s; }
+.nav-btn:hover { border-color: var(--grass); color: var(--grass-light); }
+.pixel-divider { width: 100%; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); }
+main { flex: 1; padding: 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+.page-title { font-family: 'Press Start 2P', monospace; font-size: clamp(11px, 1.8vw, 15px); color: var(--grass-light); text-shadow: 2px 2px 0 #2a4a1a; margin-bottom: 0.3rem; text-align: center; }
+.page-sub { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); margin-bottom: 2rem; letter-spacing: 1px; text-align: center; }
+.current-plan { background: #1a2a1a; border: 2px solid var(--grass); padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; font-family: 'VT323', monospace; font-size: 18px; color: var(--grass-light); text-align: center; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2px; margin-bottom: 2rem; }
+.pricing-card { background: var(--bg-card); border: 2px solid var(--border); padding: 1.5rem; text-align: center; transition: transform 0.15s; position: relative; }
+.pricing-card.featured { border-color: var(--grass); border-width: 3px; }
+.pricing-card.featured::before { content: 'MOST POPULAR'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--grass); color: #fff; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 3px 10px; white-space: nowrap; }
+.pricing-card:hover { transform: translateY(-4px); }
+.plan-name { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 2px; }
+.plan-price { font-family: 'Press Start 2P', monospace; font-size: 24px; color: var(--gold); margin-bottom: 0.25rem; text-shadow: 1px 1px 0 #8B6914; }
+.plan-period { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-dim); margin-bottom: 1rem; }
+.plan-features { list-style: none; margin: 1rem 0; text-align: left; }
+.plan-features li { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-muted); padding: 0.3rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+.plan-features li .check { color: var(--grass-light); }
+.btn-subscribe { width: 100%; padding: 12px 0 14px; font-family: 'Press Start 2P', monospace; font-size: 8px; background: var(--grass); color: #fff; border: none; cursor: pointer; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; transition: transform 0.1s, background 0.1s; letter-spacing: 0.5px; margin-top: 0.5rem; }
+.btn-subscribe:hover { background: var(--grass-light); transform: translateY(-2px); }
+.btn-subscribe:disabled { background: var(--text-dim); box-shadow: none; cursor: not-allowed; transform: none; }
+.btn-subscribe.current { background: #1a2a1a; border: 2px solid var(--grass); color: var(--grass-light); box-shadow: none; cursor: default; }
+.credits-section { background: var(--bg-card); border: 2px solid var(--border); padding: 1.5rem; margin-bottom: 2rem; }
+.credits-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--diamond); margin-bottom: 0.5rem; }
+.credits-sub { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); margin-bottom: 1.25rem; }
+.credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 2px; }
+.credit-pack { background: #1a1a1a; border: 2px solid var(--border); padding: 1rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+.credit-pack:hover { border-color: var(--diamond); transform: translateY(-2px); }
+.credit-amount { font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--diamond); display: block; margin-bottom: 0.25rem; }
+.credit-price { font-family: 'VT323', monospace; font-size: 18px; color: var(--text-muted); display: block; margin-bottom: 0.75rem; }
+.credit-value { font-family: 'VT323', monospace; font-size: 14px; color: var(--text-dim); display: block; margin-bottom: 0.75rem; }
+.btn-buy { width: 100%; padding: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: #1a1a2e; color: var(--diamond); border: 2px solid var(--diamond); cursor: pointer; transition: all 0.15s; }
+.btn-buy:hover { background: rgba(74,237,217,0.1); transform: translateY(-1px); }
+.faq-section { margin-bottom: 2rem; }
+.faq-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--grass-light); margin-bottom: 1rem; text-shadow: 2px 2px 0 #2a4a1a; }
+.faq-item { background: var(--bg-card); border: 2px solid var(--border); padding: 1rem; margin-bottom: 2px; }
+.faq-q { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text); margin-bottom: 0.5rem; line-height: 1.7; }
+.faq-a { font-family: 'VT323', monospace; font-size: 17px; color: var(--text-muted); line-height: 1.4; }
+.msg { font-family: 'VT323', monospace; font-size: 17px; padding: 8px 12px; margin-bottom: 1rem; text-align: center; display: none; }
+.msg.error { background: #2e1a1a; border: 1px solid var(--red); color: var(--red); display: block; }
+footer { background: #0d0d0d; border-top: 2px solid #1f1f1f; padding: 1rem 1.5rem; text-align: center; color: var(--text-dim); }
+.footer-logo { font-family: 'Press Start 2P', monospace; font-size: 10px; margin-bottom: 0.3rem; }
+.fl-a { color: var(--grass-light); }
+.fl-s { color: var(--diamond); }
+footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Minevixel<span> Studio</span></a>
+  <div class="nav-right">
+    <span class="nav-user">Hey, <span id="nav-user">Creator</span></span>
+    <a href="auth.html" class="nav-btn">Dashboard</a>
+    <a href="create.html" class="nav-btn">+ Create</a>
+    <a href="community.html" class="nav-btn">Community</a>
+  </div>
+</nav>
+<div class="pixel-divider"></div>
+
+<main>
+  <div class="page-title">Simple Pricing</div>
+  <div class="page-sub">Start free, upgrade when you are ready</div>
+
+  <div id="msg" class="msg error"></div>
+  <div id="current-plan-bar" class="current-plan" style="display:none;"></div>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">FREE</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-period">forever</div>
+      <ul class="plan-features">
+        <li><span class="check">✔</span> 5 addon generations/month</li>
+        <li><span class="check">✔</span> Basic mob and block creation</li>
+        <li><span class="check">✔</span> Community gallery access</li>
+        <li><span class="check">✔</span> Watermarked exports</li>
+        <li><span class="check">✔</span> My Addons history</li>
+      </ul>
+      <button class="btn-subscribe current" disabled>Current Plan</button>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="plan-name">CREATOR</div>
+      <div class="plan-price">$9.99</div>
+      <div class="plan-period">per month</div>
+      <ul class="plan-features">
+        <li><span class="check">✔</span> Unlimited generations</li>
+        <li><span class="check">✔</span> No watermarks</li>
+        <li><span class="check">✔</span> All addon types</li>
+        <li><span class="check">✔</span> 3D preview and editing</li>
+        <li><span class="check">✔</span> Community marketplace</li>
+        <li><span class="check">✔</span> Version history</li>
+        <li><span class="check">✔</span> Priority AI processing</li>
+      </ul>
+      <button class="btn-subscribe" onclick="subscribe('creator')">Upgrade to Creator</button>
+    </div>
+
+    <div class="pricing-card">
+      <div class="plan-name">PRO</div>
+      <div class="plan-price">$19.99</div>
+      <div class="plan-period">per month</div>
+      <ul class="plan-features">
+        <li><span class="check">✔</span> Everything in Creator</li>
+        <li><span class="check">✔</span> Collaboration mode</li>
+        <li><span class="check">✔</span> Advanced analytics</li>
+        <li><span class="check">✔</span> Custom branding</li>
+        <li><span class="check">✔</span> Early feature access</li>
+        <li><span class="check">✔</span> Priority support</li>
+      </ul>
+      <button class="btn-subscribe" onclick="subscribe('pro')">Upgrade to Pro</button>
+    </div>
+  </div>
+
+  <div class="credits-section">
+    <div class="credits-title">💎 Buy Credits</div>
+    <div class="credits-sub">Pay only for what you use. Credits never expire and work on any plan.</div>
+    <div class="credits-grid">
+      <div class="credit-pack">
+        <span class="credit-amount">100</span>
+        <span class="credit-price">$4.99</span>
+        <span class="credit-value">~20 addons</span>
+        <button class="btn-buy" onclick="buyCredits('credits')">Buy Credits</button>
+      </div>
+      <div class="credit-pack">
+        <span class="credit-amount">500</span>
+        <span class="credit-price">$19.99</span>
+        <span class="credit-value">~100 addons</span>
+        <button class="btn-buy" onclick="buyCredits('credits')">Buy Credits</button>
+      </div>
+      <div class="credit-pack">
+        <span class="credit-amount">1000</span>
+        <span class="credit-price">$34.99</span>
+        <span class="credit-value">~200 addons</span>
+        <button class="btn-buy" onclick="buyCredits('credits')">Buy Credits</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-title">Common Questions</div>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel my subscription anytime?</div>
+      <div class="faq-a">Yes! You can cancel at any time from your account settings. Your plan stays active until the end of the billing period.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What happens to my addons if I downgrade?</div>
+      <div class="faq-a">All your created addons are saved forever. You just won't be able to create new ones beyond the free limit until you upgrade again.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do credits expire?</div>
+      <div class="faq-a">No! Credits never expire and can be used anytime on any plan.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is my payment information secure?</div>
+      <div class="faq-a">Yes! All payments are processed securely by Stripe. We never store your card details.</div>
+    </div>
+  </div>
+</main>
+
+<div class="pixel-divider"></div>
+<footer>
+  <div class="footer-logo"><span class="fl-a">MINEVIXEL</span> <span class="fl-s">STUDIO</span></div>
+  <p>© 2026 Minevixel Studio. All rights reserved.</p>
+</footer>
+
+<script>
+var SURL = 'https://msinakayesbwqxrkzvzb.supabase.co';
+var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zaW5ha2F5ZXNid3F4cmt6dnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTIyOTMsImV4cCI6MjA5NDcyODI5M30.M3gj3TgdHomR4BRF5MYhJvmIyqGV7I3e1a7WCPH_vYU';
+var sc = window.supabase.createClient(SURL, SKEY);
+var currentUser = null;
+
+sc.auth.getSession().then(function(res) {
+  var session = res.data.session;
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+  var u = session.user.user_metadata && session.user.user_metadata.username ? session.user.user_metadata.username : session.user.email.split('@')[0];
+  document.getElementById('nav-user').textContent = u;
+});
+
+async function subscribe(plan) {
+  if (!currentUser) { window.location.href = 'auth.html'; return; }
+  var btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+
+  try {
+    var response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan: plan,
+        userId: currentUser.id,
+        userEmail: currentUser.email
+      })
+    });
+
+    var data = await response.json();
+
+    if (!response.ok || !data.url) {
+      document.getElementById('msg').textContent = data.error || 'Could not start checkout. Please try again.';
+      document.getElementById('msg').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = plan === 'creator' ? 'Upgrade to Creator' : 'Upgrade to Pro';
+      return;
+    }
+
+    window.location.href = data.url;
+
+  } catch (err) {
+    document.getElementById('msg').textContent = 'Error: ' + err.message;
+    document.getElementById('msg').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = plan === 'creator' ? 'Upgrade to Creator' : 'Upgrade to Pro';
+  }
+}
+
+async function buyCredits(plan) {
+  if (!currentUser) { window.location.href = 'auth.html'; return; }
+  try {
+    var response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan: plan,
+        userId: currentUser.id,
+        userEmail: currentUser.email
+      })
+    });
+    var data = await response.json();
+    if (!response.ok || !data.url) {
+      alert(data.error || 'Could not start checkout');
+      return;
+    }
+    window.location.href = data.url;
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
