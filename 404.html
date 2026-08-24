@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minevixel Studio — Page Not Found</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1c1c1c; --grass: #5D8A3C; --grass-light: #73A832;
+  --diamond: #4AEDD9; --gold: #FFD700;
+  --text: #f0f0f0; --text-muted: #888; --border: #333;
+}
+body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+.error-code { font-family: 'Press Start 2P', monospace; font-size: clamp(48px, 10vw, 80px); color: var(--grass-light); text-shadow: 4px 4px 0 #2a4a1a; margin-bottom: 0.5rem; animation: glow 3s ease-in-out infinite; }
+@keyframes glow {
+  0%,100% { filter: drop-shadow(0 0 8px rgba(115,168,50,0.5)); }
+  50% { filter: drop-shadow(0 0 20px rgba(115,168,50,0.9)); }
+}
+.error-icon { font-size: 64px; display: block; margin-bottom: 1rem; }
+.error-title { font-family: 'Press Start 2P', monospace; font-size: clamp(12px, 2vw, 16px); color: var(--text); margin-bottom: 0.75rem; line-height: 1.6; text-shadow: 2px 2px 0 #000; }
+.error-text { font-family: 'VT323', monospace; font-size: 20px; color: var(--text-muted); margin-bottom: 2rem; max-width: 400px; line-height: 1.5; }
+.pixel-divider { width: 280px; height: 4px; background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-light) 16px, var(--grass-light) 32px, #8B5E3C 32px, #8B5E3C 48px, #333 48px, #333 64px); margin: 0 auto 2rem; }
+.links { display: flex; flex-direction: column; gap: 4px; max-width: 280px; width: 100%; }
+.link-btn { display: block; padding: 12px 0 14px; font-family: 'Press Start 2P', monospace; font-size: 8px; text-decoration: none; letter-spacing: 0.5px; transition: transform 0.1s; }
+.link-btn.primary { background: var(--grass); color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #2a4a1a; }
+.link-btn.primary:hover { background: var(--grass-light); transform: translateY(-2px); }
+.link-btn.secondary { background: transparent; color: var(--diamond); border: 2px solid var(--diamond); box-shadow: 0 4px 0 #1a6060; }
+.link-btn.secondary:hover { background: rgba(74,237,217,0.08); transform: translateY(-2px); }
+</style>
+</head>
+<body>
+  <span class="error-icon">🗺️</span>
+  <div class="error-code">404</div>
+  <div class="error-title">Block Not Found!</div>
+  <div class="error-text">Looks like you wandered into uncharted territory. This page doesn't exist — yet!</div>
+  <div class="pixel-divider"></div>
+  <div class="links">
+    <a href="index.html" class="link-btn primary">Go Home</a>
+    <a href="create.html" class="link-btn secondary">Create an Addon</a>
+  </div>
+</body>
+</html>
