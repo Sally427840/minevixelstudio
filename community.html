@@ -114,6 +114,7 @@ footer p { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: 1px
     <a href="auth.html" class="nav-btn">Dashboard</a>
     <a href="create.html" class="nav-btn">+ Create</a>
     <a href="history.html" class="nav-btn">My Addons</a>
+    <a href="pricing.html" class="nav-btn">Pricing</a>
     <button class="nav-btn red" id="signout-btn">Sign Out</button>
   </div>
 </nav>
@@ -309,9 +310,69 @@ document.getElementById('search-input').onkeypress = function(e) {
 
 async function downloadCommunityAddon(addonId) {
   try {
-    await sc.from('addons').update({ downloads: sc.rpc('increment') }).eq('id', addonId);
-  } catch (e) {}
-  alert('Full community addon download coming in Phase 8! The addon data has been recorded.');
+    // Get the addon data
+    var result = await sc.from('addons').select('*').eq('id', addonId).single();
+    if (result.error) throw result.error;
+    var addon = result.data;
+
+    // Increment downloads
+    await sc.from('addons').update({ downloads: (addon.downloads || 0) + 1 }).eq('id', addonId);
+
+    // Build and download the mcaddon file
+    var response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        addonType: addon.addon_type,
+        addonName: addon.addon_name,
+        description: addon.description,
+        behavior: addon.behavior,
+        photo: null
+      })
+    });
+
+    var data = await response.json();
+    if (!response.ok || !data.files) {
+      alert('Could not download addon. Please try again.');
+      return;
+    }
+
+    // Package and download
+    if (!window.JSZip) {
+      await new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    var zip = new JSZip();
+    Object.keys(data.files).forEach(function(path) {
+      var fileContent = data.files[path];
+      if (path.endsWith('.png')) {
+        zip.file(path, fileContent, { base64: true });
+      } else {
+        zip.file(path, fileContent);
+      }
+    });
+
+    var blob = await zip.generateAsync({ type: 'blob' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (addon.identifier || addon.addon_name.toLowerCase().replace(/\s+/g,'_')) + '.mcaddon';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Reload to update download count
+    loadAddons();
+
+  } catch (err) {
+    alert('Download failed: ' + err.message);
+  }
 }
 
 async function openRating(addonId) {
